@@ -3,8 +3,6 @@ package org.alking.huobiapi;
 
 public class HuobiApiException extends Exception {
 
-
-
     public HuobiApiException() {
 
     }

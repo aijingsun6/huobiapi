@@ -6,6 +6,8 @@ import java.util.List;
 
 public interface HuobiApiRestClient {
 
+    List<HuobiKLineData> kline(String symbol, String period, int size) throws HuobiApiException;
+
     List<String> currencys() throws HuobiApiException;
 
     List<HuobiSymbol> symbols() throws HuobiApiException;

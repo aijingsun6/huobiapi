@@ -120,7 +120,8 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient{
             if(response.isSuccessful()){
                 body = response.body();
                 if(body != null){
-                    T t = HuobiUtil.fromJson(body.string(),clazz);
+                    String json = body.string();
+                    T t = HuobiUtil.fromJson(json,clazz);
                     HuobiApiError err = parseError(t);
                     if(err != null){
                         throw new HuobiApiException(err);
@@ -187,6 +188,41 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient{
     private <T extends HuobiResp> T httpPost(String host, String path, Map<String,String> queryMap, Object post, Class<T> clazz) throws HuobiApiException{
         return httpGetPost(host, path, queryMap, post, clazz);
     }
+
+    @Override
+    public  List<HuobiKLineData> kline(String symbol, String period, int size) throws HuobiApiException {
+        if(StringUtils.isEmpty(symbol)){
+            throw new IllegalArgumentException("symbol");
+        }
+        String ps = "1min,5min,15min,30min,60min,1day,1mon,1week,1year";
+        final String[] periods = ps.split(",");
+        boolean find = false;
+        for (String s: periods){
+            if(s.equals(period)){
+                find =  true;
+                break;
+            }
+        }
+        if(!find){
+            throw new IllegalArgumentException("period");
+        }
+
+        if(size < 1){
+            size = 1;
+        }
+        if(size > 2000){
+            size = 2000;
+        }
+
+        String path = "/market/history/kline";
+        Map<String, String> map = new HashMap<>();
+        map.put("symbol",symbol.toLowerCase());
+        map.put("period",period);
+        map.put("size", String.valueOf(size));
+        HuobiKLineResp resp = httpGet(HuobiConst.MARKET_URL,path, map, HuobiKLineResp.class);
+        return resp.getData();
+    }
+
     @Override
     public List<String> currencys() throws HuobiApiException{
         String path = "/v1/common/currencys";
