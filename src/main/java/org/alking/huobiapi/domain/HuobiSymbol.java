@@ -2,6 +2,8 @@ package org.alking.huobiapi.domain;
 
 
 import com.google.gson.annotations.SerializedName;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 public class HuobiSymbol {
 
@@ -68,5 +70,16 @@ public class HuobiSymbol {
 
     public String getSymbol(){
         return String.format("%s%s",baseCurrency, quoteCurrency);
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("base-currency",baseCurrency)
+                .append("quote-currency", quoteCurrency)
+                .append("price-precision", pricePrecision)
+                .append("amount-precision",amountPrecision)
+                .append("symbol-partition",symbolPartition)
+                .toString();
     }
 }

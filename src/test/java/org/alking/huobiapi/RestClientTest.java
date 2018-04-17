@@ -33,6 +33,9 @@ public class RestClientTest {
             e.printStackTrace();
             System.out.println(e.getMessage());
         }
+        for (String s: symbols){
+            System.out.println(s);
+        }
         Assert.assertTrue(symbols.contains("btc"));
         Assert.assertFalse(symbols.isEmpty());
     }
@@ -49,6 +52,7 @@ public class RestClientTest {
 
             for (HuobiSymbol s: symbols){
                 map.put( s.getSymbol(),s);
+                System.out.println(s);
             }
 
         } catch (HuobiApiException e) {
@@ -70,6 +74,7 @@ public class RestClientTest {
             e.printStackTrace();
             System.out.println(e.getMessage());
         }
+        System.out.println(orderBook);
         Assert.assertFalse(orderBook.getAsks().isEmpty());
     }
 
