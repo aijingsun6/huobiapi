@@ -13,6 +13,9 @@ public class HuobiResp {
     @SerializedName("err-msg")
     private String errMsg;
 
+    @SerializedName("ts")
+    private long ts;
+
     public String getStatus() {
         return status;
     }
@@ -35,6 +38,14 @@ public class HuobiResp {
 
     public void setErrMsg(String errMsg) {
         this.errMsg = errMsg;
+    }
+
+    public long getTs() {
+        return ts;
+    }
+
+    public void setTs(long ts) {
+        this.ts = ts;
     }
 
     public HuobiResp() {

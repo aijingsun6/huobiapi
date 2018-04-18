@@ -214,13 +214,25 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient{
             size = 2000;
         }
 
-        String path = "/market/history/kline";
+        final String path = "/market/history/kline";
         Map<String, String> map = new HashMap<>();
         map.put("symbol",symbol.toLowerCase());
         map.put("period",period);
         map.put("size", String.valueOf(size));
         HuobiKLineResp resp = httpGet(HuobiConst.MARKET_URL,path, map, HuobiKLineResp.class);
         return resp.getData();
+    }
+
+    @Override
+    public HuobiTick tick(String symbol) throws HuobiApiException {
+        if(StringUtils.isEmpty(symbol)){
+            throw new IllegalArgumentException("symbol");
+        }
+        final String path = "/market/detail/merged";
+        Map<String, String> map = new HashMap<>();
+        map.put("symbol", symbol.toLowerCase());
+        HuobiTickResp resp = httpGet(HuobiConst.MARKET_URL,path, map, HuobiTickResp.class);
+        return resp.getTick();
     }
 
     @Override

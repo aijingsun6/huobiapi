@@ -8,6 +8,8 @@ public interface HuobiApiRestClient {
 
     List<HuobiKLineData> kline(String symbol, String period, int size) throws HuobiApiException;
 
+    HuobiTick tick(String symbol) throws HuobiApiException;
+
     List<String> currencys() throws HuobiApiException;
 
     List<HuobiSymbol> symbols() throws HuobiApiException;
@@ -21,9 +23,6 @@ public interface HuobiApiRestClient {
     /**
      * @see HuobiAccount#ACCOUNT_TYPE_SPOT
      * @see HuobiAccount#ACCOUNT_TYPE_OTC
-     * @param type
-     * @return
-     * @throws HuobiApiException
      */
     HuobiBalance balance(String type) throws HuobiApiException;
 
