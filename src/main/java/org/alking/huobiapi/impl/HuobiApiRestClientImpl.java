@@ -252,7 +252,12 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
         query.put("symbol", symbol.trim().toLowerCase());
         query.put("type", type);
         HuobiOrderBookResp resp = httpGet(HuobiConst.MARKET_URL, path, query, HuobiOrderBookResp.class);
-        return resp.toOrderBook();
+
+        HuobiOrderBook book = new HuobiOrderBook();
+        book.setTs(resp.getTs());
+        book.setAsks(HuobiOrderBookEntry.parseMany(resp.tick.asks));
+        book.setBids(HuobiOrderBookEntry.parseMany(resp.tick.bids));
+        return book;
     }
 
     private TreeMap<String, String> buildQueryMap(Map<String, String> map, String method, String path) throws HuobiApiException {

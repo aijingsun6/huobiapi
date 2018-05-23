@@ -2,6 +2,7 @@ package org.alking.huobiapi;
 
 import org.alking.huobiapi.domain.HuobiKLineData;
 import org.alking.huobiapi.domain.ws.HuobiWSDepthEvent;
+import org.alking.huobiapi.domain.ws.HuobiWSError;
 import org.alking.huobiapi.domain.ws.HuobiWSKLineEvent;
 import org.alking.huobiapi.misc.HuobiWSEventHandler;
 import org.junit.Assert;
@@ -38,6 +39,11 @@ public class HuobiKLineTest {
             @Override
             public void handleKLine(HuobiWSKLineEvent event) {
                 System.out.println(event);
+            }
+
+            @Override
+            public void onError(HuobiWSError error) {
+                System.err.println(error);
             }
         });
 

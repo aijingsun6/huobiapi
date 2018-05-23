@@ -2,7 +2,7 @@ package org.alking.huobiapi.domain.resp;
 
 import java.util.List;
 
-public class HuobiOrderBookResp extends HuobiResp {
+public class HuobiWSOrderBookResp extends HuobiWSResp {
 
     public static class HuobiOrderBookTick {
 
@@ -12,8 +12,10 @@ public class HuobiOrderBookResp extends HuobiResp {
 
     }
 
-    public HuobiOrderBookTick tick;
+    public HuobiOrderBookResp.HuobiOrderBookTick tick;
 
-    public HuobiOrderBookResp() {
+    public HuobiWSOrderBookResp() {
     }
+
+
 }

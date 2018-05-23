@@ -5,13 +5,12 @@ import org.alking.huobiapi.domain.resp.HuobiWSKLineResp;
 import org.alking.huobiapi.domain.ws.HuobiWSKLineEvent;
 import org.alking.huobiapi.domain.ws.HuobiWSSub;
 import org.alking.huobiapi.misc.HuobiWSEventHandler;
-import org.alking.huobiapi.util.HuobiUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.UUID;
 
-public class HuobiApiWSKLineClient extends AbsHuobiApiWSClient {
+public class HuobiApiWSKLineClient extends AbsHuobiApiWSClient<HuobiWSKLineResp> {
 
     private static String[] VALID_PERIODS = new String[]{"1min", "5min", "15min", "30min", "60min", "1day", "1mon", "1week", "1year"};
 
@@ -23,7 +22,7 @@ public class HuobiApiWSKLineClient extends AbsHuobiApiWSClient {
                                  final String period,
                                  final HuobiWSEventHandler handler,
                                  final OkHttpClient client) {
-        super(client,handler);
+        super(client,handler,HuobiWSKLineResp.class);
         if (StringUtils.isEmpty(symbol) || StringUtils.isEmpty(period) || handler == null) {
             throw new IllegalArgumentException("symbol|period|handler not valid");
         }
@@ -42,8 +41,7 @@ public class HuobiApiWSKLineClient extends AbsHuobiApiWSClient {
     }
 
     @Override
-    protected void doHandler(String json) {
-        HuobiWSKLineResp resp = HuobiUtil.fromJson(json, HuobiWSKLineResp.class);
+    protected void doHandler(HuobiWSKLineResp resp) {
         if(resp.tick != null){
             HuobiWSKLineEvent event = new HuobiWSKLineEvent();
             event.setTs( resp.ts );

@@ -3,6 +3,8 @@ package org.alking.huobiapi.impl.ws;
 import okhttp3.*;
 import okio.ByteString;
 import org.alking.huobiapi.constant.HuobiConst;
+import org.alking.huobiapi.domain.resp.HuobiWSResp;
+import org.alking.huobiapi.domain.ws.HuobiWSError;
 import org.alking.huobiapi.domain.ws.HuobiWSSub;
 import org.alking.huobiapi.misc.HuobiWSEventHandler;
 import org.alking.huobiapi.util.HuobiUtil;
@@ -11,17 +13,20 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.Closeable;
 import java.io.IOException;
 
-public abstract class AbsHuobiApiWSClient extends WebSocketListener implements Closeable {
+public abstract class AbsHuobiApiWSClient<T extends HuobiWSResp> extends WebSocketListener implements Closeable {
 
     protected final OkHttpClient client;
 
     protected final HuobiWSEventHandler handler;
 
+    protected final Class<T> clazz;
+
     protected WebSocket webSocket;
 
-    public AbsHuobiApiWSClient(final OkHttpClient client, final HuobiWSEventHandler handler) {
+    public AbsHuobiApiWSClient(final OkHttpClient client, final HuobiWSEventHandler handler, final Class<T> clazz) {
         this.client = client;
         this.handler = handler;
+        this.clazz = clazz;
     }
 
     public void start() {
@@ -49,7 +54,7 @@ public abstract class AbsHuobiApiWSClient extends WebSocketListener implements C
         // logger.info("onMessage {},{}", symbol,text);
     }
 
-    protected abstract void doHandler(String json);
+    protected abstract void doHandler(T resp);
 
     @Override
     public void onMessage(WebSocket webSocket, ByteString bytes) {
@@ -68,7 +73,15 @@ public abstract class AbsHuobiApiWSClient extends WebSocketListener implements C
             webSocket.send(pong);
             return;
         }
-        this.doHandler(json);
+        T resp = HuobiUtil.fromJson(json, this.clazz);
+        if (resp.status != null && !resp.status.equals(HuobiWSResp.STATUES_OK)) {
+            HuobiWSError err = new HuobiWSError(resp.errCode, resp.errMsg);
+            if (handler != null) {
+                this.handler.onError(err);
+            }
+        } else {
+            this.doHandler(resp);
+        }
     }
 
     @Override
@@ -79,7 +92,7 @@ public abstract class AbsHuobiApiWSClient extends WebSocketListener implements C
     @Override
     public void onClosed(WebSocket webSocket, int code, String reason) {
         System.out.println(String.format("%s onClosed %d,%s", getClass().getSimpleName(), code, reason));
-        if(this.handler != null){
+        if (this.handler != null) {
             this.handler.onClosed(code, reason);
         }
 
@@ -88,7 +101,7 @@ public abstract class AbsHuobiApiWSClient extends WebSocketListener implements C
     @Override
     public void onFailure(WebSocket webSocket, Throwable t, Response response) {
         System.out.println(String.format("%s onFailure,%s", getClass().getSimpleName(), t.getMessage()));
-        if(this.handler != null){
+        if (this.handler != null) {
             handler.onFailure(t.getMessage());
         }
     }

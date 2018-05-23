@@ -1,6 +1,7 @@
 package org.alking.huobiapi.misc;
 
 import org.alking.huobiapi.domain.ws.HuobiWSDepthEvent;
+import org.alking.huobiapi.domain.ws.HuobiWSError;
 import org.alking.huobiapi.domain.ws.HuobiWSKLineEvent;
 
 public abstract class HuobiWSEventHandler {
@@ -12,4 +13,6 @@ public abstract class HuobiWSEventHandler {
     public void onClosed(int code, String reason){}
 
     public void onFailure(String msg){}
+
+    public void onError(HuobiWSError error){};
 }
