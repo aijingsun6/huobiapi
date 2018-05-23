@@ -18,11 +18,12 @@ public class HuobiApiWSKLineClient extends AbsHuobiApiWSClient<HuobiWSKLineResp>
 
     private final String period;
 
-    public HuobiApiWSKLineClient(final String symbol,
-                                 final String period,
-                                 final HuobiWSEventHandler handler,
-                                 final OkHttpClient client) {
-        super(client,handler,HuobiWSKLineResp.class);
+    public HuobiApiWSKLineClient(
+            final OkHttpClient client,
+            final HuobiWSEventHandler handler,
+            final String symbol,
+            final String period) {
+        super(client, handler, HuobiWSKLineResp.class);
         if (StringUtils.isEmpty(symbol) || StringUtils.isEmpty(period) || handler == null) {
             throw new IllegalArgumentException("symbol|period|handler not valid");
         }
@@ -42,10 +43,10 @@ public class HuobiApiWSKLineClient extends AbsHuobiApiWSClient<HuobiWSKLineResp>
 
     @Override
     protected void doHandler(HuobiWSKLineResp resp) {
-        if(resp.tick != null){
+        if (resp.tick != null) {
             HuobiWSKLineEvent event = new HuobiWSKLineEvent();
-            event.setTs( resp.ts );
-            event.setData( resp.tick);
+            event.setTs(resp.ts);
+            event.setData(resp.tick);
             this.handler.handleKLine(event);
         }
     }

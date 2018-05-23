@@ -73,6 +73,7 @@ public abstract class AbsHuobiApiWSClient<T extends HuobiWSResp> extends WebSock
             webSocket.send(pong);
             return;
         }
+        // System.out.println(json);
         T resp = HuobiUtil.fromJson(json, this.clazz);
         if (resp.status != null && !resp.status.equals(HuobiWSResp.STATUES_OK)) {
             HuobiWSError err = new HuobiWSError(resp.errCode, resp.errMsg);

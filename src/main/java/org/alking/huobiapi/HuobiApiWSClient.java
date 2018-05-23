@@ -7,4 +7,6 @@ public interface HuobiApiWSClient {
     void depth(String symbol, String type, HuobiWSEventHandler handler) throws HuobiApiException;
 
     void kline(String symbol, String period, HuobiWSEventHandler handler) throws HuobiApiException;
+
+    void tradeDetail(String symbol, HuobiWSEventHandler handler) throws HuobiApiException;
 }

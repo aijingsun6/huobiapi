@@ -16,4 +16,5 @@ public class HuobiTickTest {
         Assert.assertNotNull(tick);
 
     }
+
 }

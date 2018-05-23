@@ -1,6 +1,6 @@
 package org.alking.huobiapi.impl.ws;
 
-import okhttp3.*;
+import okhttp3.OkHttpClient;
 import org.alking.huobiapi.domain.HuobiOrderBookEntry;
 import org.alking.huobiapi.domain.resp.HuobiWSOrderBookResp;
 import org.alking.huobiapi.domain.ws.HuobiWSDepthEvent;
@@ -8,9 +8,7 @@ import org.alking.huobiapi.domain.ws.HuobiWSSub;
 import org.alking.huobiapi.misc.HuobiWSEventHandler;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 public class HuobiApiWSDepthClient extends AbsHuobiApiWSClient<HuobiWSOrderBookResp> {
@@ -21,10 +19,11 @@ public class HuobiApiWSDepthClient extends AbsHuobiApiWSClient<HuobiWSOrderBookR
 
     private final String type;
 
-    public HuobiApiWSDepthClient(final String symbol,
-                                 final String type,
-                                 final HuobiWSEventHandler handler,
-                                 final OkHttpClient client) {
+    public HuobiApiWSDepthClient(
+            final OkHttpClient client,
+            final HuobiWSEventHandler handler,
+            final String symbol,
+            final String type) {
         super(client, handler, HuobiWSOrderBookResp.class);
         if (StringUtils.isEmpty(symbol) || StringUtils.isEmpty(type) || handler == null) {
             throw new IllegalArgumentException("symbol|type|handler not valid");

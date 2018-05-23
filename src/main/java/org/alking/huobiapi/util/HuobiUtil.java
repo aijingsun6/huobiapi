@@ -1,17 +1,14 @@
 package org.alking.huobiapi.util;
 
 import com.google.gson.Gson;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
-
 import java.io.*;
 import java.lang.reflect.Type;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.util.Map;
 
 public class HuobiUtil {

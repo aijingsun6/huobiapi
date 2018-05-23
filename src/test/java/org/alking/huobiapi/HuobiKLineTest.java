@@ -1,7 +1,6 @@
 package org.alking.huobiapi;
 
 import org.alking.huobiapi.domain.HuobiKLineData;
-import org.alking.huobiapi.domain.ws.HuobiWSDepthEvent;
 import org.alking.huobiapi.domain.ws.HuobiWSError;
 import org.alking.huobiapi.domain.ws.HuobiWSKLineEvent;
 import org.alking.huobiapi.misc.HuobiWSEventHandler;
@@ -36,6 +35,26 @@ public class HuobiKLineTest {
         HuobiApiWSClient client = factory.newWSClient();
 
         client.kline("btcusdt", "5min", new HuobiWSEventHandler() {
+            @Override
+            public void handleKLine(HuobiWSKLineEvent event) {
+                System.out.println(event);
+            }
+
+            @Override
+            public void onError(HuobiWSError error) {
+                System.err.println(error);
+            }
+        });
+
+        Thread.sleep(1000 * 60);
+    }
+
+    @Test
+    public void wsErrorTest() throws HuobiApiException, InterruptedException {
+        HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance();
+        HuobiApiWSClient client = factory.newWSClient();
+
+        client.kline("btcusdt12345", "5min", new HuobiWSEventHandler() {
             @Override
             public void handleKLine(HuobiWSKLineEvent event) {
                 System.out.println(event);
