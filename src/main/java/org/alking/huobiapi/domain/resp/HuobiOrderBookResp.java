@@ -2,6 +2,7 @@ package org.alking.huobiapi.domain.resp;
 
 import org.alking.huobiapi.domain.HuobiOrderBook;
 import org.alking.huobiapi.domain.HuobiOrderBookEntry;
+import org.alking.huobiapi.domain.ws.HuobiWSDepthEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,13 @@ public class HuobiOrderBookResp extends HuobiResp {
 
     public HuobiOrderBookTick tick;
 
+    public boolean valid(){
+        if(tick == null){
+            return false;
+        }
+        return true;
+    }
+
     public HuobiOrderBookResp() {
     }
 
@@ -34,10 +42,20 @@ public class HuobiOrderBookResp extends HuobiResp {
     public HuobiOrderBook toOrderBook(){
         HuobiOrderBook result = new HuobiOrderBook();
         if(tick != null){
-            result.setTs( tick.ts );
+            result.setTs(  getTs() );
             result.setAsks( parseEntries(tick.asks) );
             result.setBids( parseEntries(tick.bids) );
         }
         return result;
+    }
+
+    public HuobiWSDepthEvent toDepthEvent(){
+        HuobiWSDepthEvent event = new HuobiWSDepthEvent();
+        event.setTs( getTs() );
+        if(tick != null){
+            event.setAsks(  parseEntries(tick.asks) );
+            event.setBids(  parseEntries(tick.bids) );
+        }
+        return event;
     }
 }

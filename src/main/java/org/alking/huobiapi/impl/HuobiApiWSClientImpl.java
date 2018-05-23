@@ -1,28 +1,42 @@
 package org.alking.huobiapi.impl;
 
-
+import okhttp3.*;
 import org.alking.huobiapi.HuobiApiException;
 import org.alking.huobiapi.HuobiApiWSClient;
-import org.alking.huobiapi.domain.HuobiOrderBook;
+import org.alking.huobiapi.impl.ws.HuobiApiWSDepthClient;
+import org.alking.huobiapi.misc.HuobiWSEventHandler;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
-public class HuobiApiWSClientImpl implements HuobiApiWSClient {
+public class HuobiApiWSClientImpl implements HuobiApiWSClient, Closeable {
 
-    private static final ConcurrentHashMap<String, HuobiApiDepthCache> depthCacheMap = new ConcurrentHashMap<>();
+    private static final OkHttpClient.Builder build = new OkHttpClient.Builder();
 
-    private static final Object depthCacheLock = new Object();
+    static {
+        build.connectTimeout(10, TimeUnit.SECONDS);
+        build.readTimeout(10, TimeUnit.SECONDS);
+        build.writeTimeout(10, TimeUnit.SECONDS);
+    }
+
+    private OkHttpClient client;
+
+    public HuobiApiWSClientImpl() {
+        this.client = build.build();
+        //TODO:可配置
+        this.client.dispatcher().setMaxRequests(32);
+        this.client.dispatcher().setMaxRequestsPerHost(32);
+    }
 
     @Override
-    public HuobiOrderBook depth(String symbol, String type) throws HuobiApiException {
-        synchronized (depthCacheLock) {
-            if (!depthCacheMap.containsKey(symbol)) {
-                HuobiApiDepthCache cache = new HuobiApiDepthCache(symbol, type);
-                depthCacheMap.put(symbol, cache);
-            }
+    public void depth(String symbol, String type, HuobiWSEventHandler handler) throws HuobiApiException {
+        new HuobiApiWSDepthClient(symbol,type,handler,this.client).start();
+    }
 
-        }
-        HuobiApiDepthCache cache = depthCacheMap.get(symbol);
-        return cache.getCache();
+    @Override
+    public void close() throws IOException {
+        this.client.dispatcher().executorService().shutdown();
     }
 }

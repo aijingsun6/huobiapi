@@ -1,9 +1,8 @@
 package org.alking.huobiapi;
 
-
-import org.alking.huobiapi.domain.HuobiOrderBook;
+import org.alking.huobiapi.misc.HuobiWSEventHandler;
 
 public interface HuobiApiWSClient {
 
-    HuobiOrderBook depth(String symbol, String type) throws HuobiApiException;
+    void depth(String symbol, String type, HuobiWSEventHandler handler) throws HuobiApiException;
 }

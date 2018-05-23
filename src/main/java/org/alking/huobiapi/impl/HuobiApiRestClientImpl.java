@@ -9,8 +9,6 @@ import org.alking.huobiapi.domain.*;
 import org.alking.huobiapi.domain.resp.*;
 import org.alking.huobiapi.util.HuobiUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import javax.net.ssl.*;
 import java.io.IOException;
@@ -22,9 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-public class HuobiApiRestClientImpl implements HuobiApiRestClient{
-
-    private static final Logger logger = LogManager.getLogger(HuobiApiRestClientImpl.class);
+public class HuobiApiRestClientImpl implements HuobiApiRestClient {
 
     private static final String METHOD_GET = "GET";
 
@@ -36,7 +32,7 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient{
 
     static {
         builder.sslSocketFactory(getSSLSocketFactory());
-        builder.hostnameVerifier(new HostnameVerifier(){
+        builder.hostnameVerifier(new HostnameVerifier() {
 
             @Override
             public boolean verify(String s, SSLSession sslSession) {
@@ -102,8 +98,8 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient{
         sdfTime.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
-    private HuobiApiError parseError(HuobiResp resp){
-        if(resp.getStatus().equals("ok")){
+    private HuobiApiError parseError(HuobiResp resp) {
+        if (resp.getStatus().equals("ok")) {
             return null;
         }
         HuobiApiError err = new HuobiApiError();
@@ -112,34 +108,34 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient{
         return err;
     }
 
-    private <T extends HuobiResp> T executeReq(Request request, Class<T> clazz)throws HuobiApiException{
-        Call call =  httpClient.newCall(request);
+    private <T extends HuobiResp> T executeReq(Request request, Class<T> clazz) throws HuobiApiException {
+        Call call = httpClient.newCall(request);
         try {
             Response response = call.execute();
             ResponseBody body;
-            if(response.isSuccessful()){
+            if (response.isSuccessful()) {
                 body = response.body();
-                if(body != null){
+                if (body != null) {
                     String json = body.string();
-                    T t = HuobiUtil.fromJson(json,clazz);
+                    T t = HuobiUtil.fromJson(json, clazz);
                     HuobiApiError err = parseError(t);
-                    if(err != null){
+                    if (err != null) {
                         throw new HuobiApiException(err);
-                    }else {
+                    } else {
                         return t;
                     }
-                }else {
+                } else {
                     throw new HuobiApiException("body error");
                 }
 
-            }else {
+            } else {
                 body = response.body();
-                if(body != null){
-                    HuobiResp resp = HuobiUtil.fromJson(body.string(),HuobiResp.class);
+                if (body != null) {
+                    HuobiResp resp = HuobiUtil.fromJson(body.string(), HuobiResp.class);
                     HuobiApiError err = parseError(resp);
-                    throw  new HuobiApiException(err);
+                    throw new HuobiApiException(err);
                 }
-                throw new HuobiApiException(String.format("execute error with url %s",request.url().url().toString()));
+                throw new HuobiApiException(String.format("execute error with url %s", request.url().url().toString()));
             }
         } catch (IOException e) {
             throw new HuobiApiException(e);
@@ -152,100 +148,100 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient{
 
         Request.Builder builder = new Request.Builder().url(url);
         Map<String, String> map = new HashMap<>();
-        map.put("Content-type","application/x-www-form-urlencoded");
-        map.put("Accept","application/json");
-        map.put("Accept-Language","zh-CN");
-        map.put("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36");
+        map.put("Content-type", "application/x-www-form-urlencoded");
+        map.put("Accept", "application/json");
+        map.put("Accept-Language", "zh-CN");
+        map.put("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36");
 
-        for (Map.Entry<String, String> e: map.entrySet()){
+        for (Map.Entry<String, String> e : map.entrySet()) {
             builder.addHeader(e.getKey(), e.getValue());
         }
-        if(post != null){
+        if (post != null) {
             String json = HuobiUtil.toJson(post);
-            logger.debug("post:{}",json);
             RequestBody body = RequestBody.create(JSON, json);
-            return  builder.post(body).build();
+            return builder.post(body).build();
         }
 
         return builder.build();
     }
 
-    private <T extends HuobiResp> T httpGetPost(String host, String path, Map<String,String> queryMap, Object post, Class<T> clazz) throws HuobiApiException{
+    private <T extends HuobiResp> T httpGetPost(String host, String path, Map<String, String> queryMap, Object post, Class<T> clazz) throws HuobiApiException {
         String query = null;
         try {
             query = HuobiUtil.buildQuery(queryMap);
         } catch (UnsupportedEncodingException e) {
             throw new HuobiApiException(e);
         }
-        String url = String.format("%s%s?%s",host, path, query);
+        String url = String.format("%s%s?%s", host, path, query);
         // System.out.println(url);
-        return executeReq(buildRequest(url,post), clazz);
+        return executeReq(buildRequest(url, post), clazz);
     }
-    private <T extends HuobiResp> T httpGet(String host, String path, Map<String,String> queryMap, Class<T> clazz) throws HuobiApiException{
+
+    private <T extends HuobiResp> T httpGet(String host, String path, Map<String, String> queryMap, Class<T> clazz) throws HuobiApiException {
         return httpGetPost(host, path, queryMap, null, clazz);
     }
 
-    private <T extends HuobiResp> T httpPost(String host, String path, Map<String,String> queryMap, Object post, Class<T> clazz) throws HuobiApiException{
+    private <T extends HuobiResp> T httpPost(String host, String path, Map<String, String> queryMap, Object post, Class<T> clazz) throws HuobiApiException {
         return httpGetPost(host, path, queryMap, post, clazz);
     }
 
     @Override
-    public  List<HuobiKLineData> kline(String symbol, String period, int size) throws HuobiApiException {
-        if(StringUtils.isEmpty(symbol)){
+    public List<HuobiKLineData> kline(String symbol, String period, int size) throws HuobiApiException {
+        if (StringUtils.isEmpty(symbol)) {
             throw new IllegalArgumentException("symbol");
         }
         String ps = "1min,5min,15min,30min,60min,1day,1mon,1week,1year";
         final String[] periods = ps.split(",");
         boolean find = false;
-        for (String s: periods){
-            if(s.equals(period)){
-                find =  true;
+        for (String s : periods) {
+            if (s.equals(period)) {
+                find = true;
                 break;
             }
         }
-        if(!find){
+        if (!find) {
             throw new IllegalArgumentException("period");
         }
 
-        if(size < 1){
+        if (size < 1) {
             size = 1;
         }
-        if(size > 2000){
+        if (size > 2000) {
             size = 2000;
         }
 
         final String path = "/market/history/kline";
         Map<String, String> map = new HashMap<>();
-        map.put("symbol",symbol.toLowerCase());
-        map.put("period",period);
+        map.put("symbol", symbol.toLowerCase());
+        map.put("period", period);
         map.put("size", String.valueOf(size));
-        HuobiKLineResp resp = httpGet(HuobiConst.MARKET_URL,path, map, HuobiKLineResp.class);
+        HuobiKLineResp resp = httpGet(HuobiConst.MARKET_URL, path, map, HuobiKLineResp.class);
         return resp.getData();
     }
 
     @Override
     public HuobiTick tick(String symbol) throws HuobiApiException {
-        if(StringUtils.isEmpty(symbol)){
+        if (StringUtils.isEmpty(symbol)) {
             throw new IllegalArgumentException("symbol");
         }
         final String path = "/market/detail/merged";
         Map<String, String> map = new HashMap<>();
         map.put("symbol", symbol.toLowerCase());
-        HuobiTickResp resp = httpGet(HuobiConst.MARKET_URL,path, map, HuobiTickResp.class);
+        HuobiTickResp resp = httpGet(HuobiConst.MARKET_URL, path, map, HuobiTickResp.class);
         return resp.getTick();
     }
 
     @Override
-    public List<String> currencys() throws HuobiApiException{
+    public List<String> currencys() throws HuobiApiException {
         String path = "/v1/common/currencys";
-        HuobiCurrencysResp resp = httpGet(HuobiConst.MARKET_URL, path, null,HuobiCurrencysResp.class);
+        HuobiCurrencysResp resp = httpGet(HuobiConst.MARKET_URL, path, null, HuobiCurrencysResp.class);
         return resp.getSymbols();
     }
 
     @Override
     public List<HuobiSymbol> symbols() throws HuobiApiException {
         String path = "/v1/common/symbols";
-        HuobiSymbolResp resp = httpGet(HuobiConst.MARKET_URL,path, null,HuobiSymbolResp.class);
+        HuobiSymbolResp resp = httpGet(HuobiConst.MARKET_URL, path, null, HuobiSymbolResp.class);
         return resp.getSymbols();
     }
 
@@ -253,30 +249,30 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient{
     public HuobiOrderBook depth(String symbol, String type) throws HuobiApiException {
         String path = "/market/depth";
         Map<String, String> query = new HashMap<>();
-        query.put("symbol",symbol.trim().toLowerCase());
+        query.put("symbol", symbol.trim().toLowerCase());
         query.put("type", type);
-        HuobiOrderBookResp resp = httpGet(HuobiConst.MARKET_URL,path, query, HuobiOrderBookResp.class);
+        HuobiOrderBookResp resp = httpGet(HuobiConst.MARKET_URL, path, query, HuobiOrderBookResp.class);
         return resp.toOrderBook();
     }
 
-    private TreeMap<String, String> buildQueryMap(Map<String, String> map, String method, String path) throws HuobiApiException{
+    private TreeMap<String, String> buildQueryMap(Map<String, String> map, String method, String path) throws HuobiApiException {
         TreeMap<String, String> query = new TreeMap<>();
         query.put("AccessKeyId", apiKey);
-        query.put("SignatureMethod","HmacSHA256");
-        query.put("SignatureVersion","2");
+        query.put("SignatureMethod", "HmacSHA256");
+        query.put("SignatureVersion", "2");
         Date now = new Date();
-        String timestamp = String.format("%sT%s",sdfDate.format(now),sdfTime.format(now));
+        String timestamp = String.format("%sT%s", sdfDate.format(now), sdfTime.format(now));
         // timestamp = "2018-01-08T14:30:20";
 
         query.put("Timestamp", timestamp);
 
-        if(METHOD_GET.equals(method) && (map != null) && !map.isEmpty()){
-            for (Map.Entry<String, String> e : map.entrySet()){
+        if (METHOD_GET.equals(method) && (map != null) && !map.isEmpty()) {
+            for (Map.Entry<String, String> e : map.entrySet()) {
                 query.put(e.getKey(), e.getValue());
             }
         }
         try {
-            String data = String.format("%s\napi.huobi.pro\n%s\n%s",method,path,HuobiUtil.buildQuery(query));
+            String data = String.format("%s\napi.huobi.pro\n%s\n%s", method, path, HuobiUtil.buildQuery(query));
             String sign = HuobiUtil.hashMac256(data, secret);
             query.put("Signature", sign);
             return query;
@@ -287,19 +283,19 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient{
 
     @Override
     public List<HuobiAccount> accounts() throws HuobiApiException {
-        synchronized (accountsCacheLock){
-            if(accountsCache != null){
+        synchronized (accountsCacheLock) {
+            if (accountsCache != null) {
                 return accountsCache;
             }
         }
-        if(StringUtils.isEmpty(apiKey) || StringUtils.isEmpty(secret)){
+        if (StringUtils.isEmpty(apiKey) || StringUtils.isEmpty(secret)) {
             throw new HuobiApiException("key not exist");
         }
         String path = "/v1/account/accounts";
-        TreeMap<String, String> query = buildQueryMap(null,METHOD_GET, path);
-        HuobiAccountResp resp = httpGet(HuobiConst.TRADE_URL,path,query, HuobiAccountResp.class);
-        if(resp != null && !resp.getAccounts().isEmpty()){
-            synchronized (accountsCacheLock){
+        TreeMap<String, String> query = buildQueryMap(null, METHOD_GET, path);
+        HuobiAccountResp resp = httpGet(HuobiConst.TRADE_URL, path, query, HuobiAccountResp.class);
+        if (resp != null && !resp.getAccounts().isEmpty()) {
+            synchronized (accountsCacheLock) {
                 this.accountsCache = resp.getAccounts();
             }
             return resp.getAccounts();
@@ -309,16 +305,16 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient{
 
     private HuobiAccount spotAccount() throws HuobiApiException {
         List<HuobiAccount> accounts = null;
-        synchronized (accountsCacheLock){
-            if(accountsCache != null){
+        synchronized (accountsCacheLock) {
+            if (accountsCache != null) {
                 accounts = accountsCache;
-            }else {
+            } else {
                 accounts = accounts();
             }
         }
-        for (HuobiAccount acc: accounts){
-            if(HuobiAccount.ACCOUNT_TYPE_SPOT.equals(acc.getType())){
-               return acc;
+        for (HuobiAccount acc : accounts) {
+            if (HuobiAccount.ACCOUNT_TYPE_SPOT.equals(acc.getType())) {
+                return acc;
             }
         }
         return null;
@@ -326,27 +322,27 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient{
 
     @Override
     public HuobiBalance balance(String type) throws HuobiApiException {
-        if(StringUtils.isEmpty(apiKey) || StringUtils.isEmpty(secret)){
+        if (StringUtils.isEmpty(apiKey) || StringUtils.isEmpty(secret)) {
             throw new HuobiApiException("key not exist");
         }
-        if(!HuobiAccount.ACCOUNT_TYPE_SPOT.equals(type) && !HuobiAccount.ACCOUNT_TYPE_OTC.equals(type)){
+        if (!HuobiAccount.ACCOUNT_TYPE_SPOT.equals(type) && !HuobiAccount.ACCOUNT_TYPE_OTC.equals(type)) {
             throw new HuobiApiException("invalid type");
         }
         List<HuobiAccount> accounts = null;
-        synchronized (accountsCacheLock){
-            if(accountsCache != null){
+        synchronized (accountsCacheLock) {
+            if (accountsCache != null) {
                 accounts = accountsCache;
-            }else {
+            } else {
                 accounts = accounts();
             }
         }
         HuobiAccount spotAccount = null;
-        for (HuobiAccount acc: accounts){
-            if(type.equals(acc.getType())){
+        for (HuobiAccount acc : accounts) {
+            if (type.equals(acc.getType())) {
                 spotAccount = acc;
             }
         }
-        if(spotAccount == null){
+        if (spotAccount == null) {
             throw new HuobiApiException("spot account not found");
         }
         return balance(spotAccount.getId());
@@ -356,15 +352,15 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient{
     public HuobiBalance balance(long accountId) throws HuobiApiException {
         String path = String.format("/v1/account/accounts/%d/balance", accountId);
         HashMap<String, String> map = new HashMap<>();
-        map.put("account-id",String.valueOf(accountId));
+        map.put("account-id", String.valueOf(accountId));
         TreeMap<String, String> query = buildQueryMap(map, METHOD_GET, path);
-        HuobiBalanceResp resp = httpGet(HuobiConst.TRADE_URL,path, query, HuobiBalanceResp.class);
+        HuobiBalanceResp resp = httpGet(HuobiConst.TRADE_URL, path, query, HuobiBalanceResp.class);
         return resp.data;
     }
 
     @Override
     public String sendOrder(String symbol, String price, String amount, HuobiOrderType type) throws HuobiApiException {
-        if(StringUtils.isEmpty(symbol)){
+        if (StringUtils.isEmpty(symbol)) {
             throw new HuobiApiException("invalid symbol");
         }
         symbol = symbol.trim().toLowerCase();
@@ -374,10 +370,10 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient{
         HashMap<String, String> map = new HashMap<>();
         map.put("account-id", String.valueOf(spotAcount.getId()));
         map.put("amount", amount);
-        map.put("price",price);
+        map.put("price", price);
         map.put("symbol", symbol);
         map.put("type", type.getName());
-        map.put("source",source);
+        map.put("source", source);
         TreeMap<String, String> query = buildQueryMap(map, METHOD_POST, path);
         HuobiOrderResp resp = httpPost(HuobiConst.TRADE_URL, path, query, map, HuobiOrderResp.class);
         return resp.getOrderId();
@@ -385,52 +381,52 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient{
 
     @Override
     public String cancelOrder(String orderId) throws HuobiApiException {
-        if(StringUtils.isEmpty(orderId)){
+        if (StringUtils.isEmpty(orderId)) {
             throw new HuobiApiException("invalid orderId");
         }
-        final String path = String.format("/v1/order/orders/%s/submitcancel",orderId);
+        final String path = String.format("/v1/order/orders/%s/submitcancel", orderId);
         HashMap<String, String> map = new HashMap<>();
         TreeMap<String, String> query = buildQueryMap(map, METHOD_POST, path);
-        HuobiCancelOrderResp resp = httpPost(HuobiConst.TRADE_URL,path, query, map,HuobiCancelOrderResp.class);
+        HuobiCancelOrderResp resp = httpPost(HuobiConst.TRADE_URL, path, query, map, HuobiCancelOrderResp.class);
         return resp.getOrderId();
     }
 
     @Override
     public HuobiOrderInfo orderInfo(String orderId) throws HuobiApiException {
-        if(StringUtils.isEmpty(orderId)){
+        if (StringUtils.isEmpty(orderId)) {
             throw new HuobiApiException("invalid orderId");
         }
-        String path = String.format("/v1/order/orders/%s",orderId);
+        String path = String.format("/v1/order/orders/%s", orderId);
         HashMap<String, String> map = new HashMap<>();
         TreeMap<String, String> query = buildQueryMap(map, METHOD_POST, path);
-        HuobiOrderInfolResp resp = httpPost(HuobiConst.TRADE_URL,path, query, map, HuobiOrderInfolResp.class);
+        HuobiOrderInfolResp resp = httpPost(HuobiConst.TRADE_URL, path, query, map, HuobiOrderInfolResp.class);
         return resp.getOrderDetail();
     }
 
     @Override
     public HuobiOrderMatchResult matchResult(String orderId) throws HuobiApiException {
-        if(StringUtils.isEmpty(orderId)){
+        if (StringUtils.isEmpty(orderId)) {
             throw new HuobiApiException("invalid orderId");
         }
-        String path = String.format("/v1/order/orders/%s/matchresults",orderId);
+        String path = String.format("/v1/order/orders/%s/matchresults", orderId);
         HashMap<String, String> map = new HashMap<>();
         TreeMap<String, String> query = buildQueryMap(map, METHOD_GET, path);
-        HuobiOrderMatchResultResp resp = httpGet(HuobiConst.TRADE_URL,path, query,HuobiOrderMatchResultResp.class);
+        HuobiOrderMatchResultResp resp = httpGet(HuobiConst.TRADE_URL, path, query, HuobiOrderMatchResultResp.class);
         return resp.getMatchResult();
     }
 
-    private String joinTypes(List<HuobiOrderType> types){
-        if(types == null || types.isEmpty()){
+    private String joinTypes(List<HuobiOrderType> types) {
+        if (types == null || types.isEmpty()) {
             return "";
         }
-        return StringUtils.join( types,",");
+        return StringUtils.join(types, ",");
     }
 
-    private String joinStates(List<HuobiOrderState> states){
-        if(states == null || states.isEmpty()){
+    private String joinStates(List<HuobiOrderState> states) {
+        if (states == null || states.isEmpty()) {
             return "";
         }
-        return StringUtils.join( states,",");
+        return StringUtils.join(states, ",");
     }
 
     @Override
@@ -441,36 +437,36 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient{
                                        List<HuobiOrderState> states,
                                        String fromOrderId,
                                        int size) throws HuobiApiException {
-        if(StringUtils.isEmpty(symbol)){
+        if (StringUtils.isEmpty(symbol)) {
             throw new HuobiApiException("symbol is valid");
         }
-        if(states == null || states.isEmpty()){
+        if (states == null || states.isEmpty()) {
             throw new HuobiApiException("states is empty");
         }
         symbol = symbol.trim().toLowerCase();
         final String path = "/v1/order/orders";
         HashMap<String, String> map = new HashMap<>();
-        map.put("symbol",symbol);
+        map.put("symbol", symbol);
         String typesJoin = joinTypes(types);
-        if(StringUtils.isEmpty(typesJoin)){
+        if (StringUtils.isEmpty(typesJoin)) {
             map.put("types", typesJoin);
         }
-        if(!StringUtils.isEmpty(startDate)){
+        if (!StringUtils.isEmpty(startDate)) {
             map.put("start-date", startDate);
         }
-        if(!StringUtils.isEmpty(endDate)){
+        if (!StringUtils.isEmpty(endDate)) {
             map.put("end-date", endDate);
         }
         map.put("states", joinStates(states));
-        if(!StringUtils.isEmpty(fromOrderId)){
+        if (!StringUtils.isEmpty(fromOrderId)) {
             map.put("from", fromOrderId);
         }
-        if(size > 0){
+        if (size > 0) {
             map.put("size", String.valueOf(size));
         }
 
         TreeMap<String, String> query = buildQueryMap(map, METHOD_GET, path);
-        HuobiOrdersResp resp = httpGet(HuobiConst.TRADE_URL,path, query,HuobiOrdersResp.class);
+        HuobiOrdersResp resp = httpGet(HuobiConst.TRADE_URL, path, query, HuobiOrdersResp.class);
         return resp.getOrderInfos();
     }
 

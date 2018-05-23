@@ -1,12 +1,13 @@
-package org.alking.huobiapi.domain;
+package org.alking.huobiapi.domain.ws;
 
+import org.alking.huobiapi.domain.HuobiOrderBookEntry;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class HuobiOrderBook {
+public class HuobiWSDepthEvent {
 
     private long ts;
 
@@ -38,9 +39,8 @@ public class HuobiOrderBook {
         this.asks = asks;
     }
 
-    public HuobiOrderBook() {
+    public HuobiWSDepthEvent() {
     }
-
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)

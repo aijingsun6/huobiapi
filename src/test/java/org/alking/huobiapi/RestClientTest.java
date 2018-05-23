@@ -3,8 +3,6 @@ package org.alking.huobiapi;
 
 import org.alking.huobiapi.domain.*;
 import org.alking.huobiapi.util.HuobiUtil;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,7 +13,6 @@ import java.util.Map;
 
 public class RestClientTest {
 
-    private static final Logger logger = LogManager.getLogger(RestClientTest.class);
 
     private static final String HUOBI_ACCESS_KEY = "";
 
@@ -115,13 +112,13 @@ public class RestClientTest {
             HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance(HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY);
             HuobiApiRestClient client = factory.newRestClient();
             String orderId = client.sendOrder("btcusdt", "1", "0.001", HuobiOrderType.BUY_LIMIT);
-            logger.info("order success id : {}", orderId);
+            // logger.info("order success id : {}", orderId);
 
             client.cancelOrder(orderId);
-            logger.info("cancel order success id : {}", orderId);
+            // logger.info("cancel order success id : {}", orderId);
 
         } catch (HuobiApiException e) {
-            logger.error(e.getMessage());
+            // logger.error(e.getMessage());
         }
     }
     // @Test
@@ -138,9 +135,9 @@ public class RestClientTest {
             HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance(HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY);
             HuobiApiRestClient client = factory.newRestClient();
             HuobiOrderInfo orderDetail = client.orderInfo("641177079");
-            logger.info("order detail:{}", HuobiUtil.toJson(orderDetail));
+            // logger.info("order detail:{}", HuobiUtil.toJson(orderDetail));
         } catch (HuobiApiException e) {
-            logger.error(e.getMessage());
+            // logger.error(e.getMessage());
         }
     }
 
@@ -150,9 +147,9 @@ public class RestClientTest {
             HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance(HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY);
             HuobiApiRestClient client = factory.newRestClient();
             HuobiOrderMatchResult matchResult = client.matchResult("641177079");
-            logger.info("matchResult:{}", HuobiUtil.toJson(matchResult));
+            // logger.info("matchResult:{}", HuobiUtil.toJson(matchResult));
         } catch (HuobiApiException e) {
-            logger.error(e.getMessage());
+            // logger.error(e.getMessage());
         }
 
     }
@@ -166,9 +163,9 @@ public class RestClientTest {
             List<HuobiOrderState> states = new ArrayList<>();
             states.add( HuobiOrderState.CANCELED);
             List<HuobiOrderInfo> infos = client.orders("btcusdt", types,null,null,   states, null,0);
-            logger.info("ordres:{}", HuobiUtil.toJson(infos));
+            // logger.info("ordres:{}", HuobiUtil.toJson(infos));
         } catch (HuobiApiException e) {
-            logger.error(e.getMessage());
+            // logger.error(e.getMessage());
         }
     }
 

@@ -5,6 +5,8 @@ import com.google.gson.annotations.SerializedName;
 
 public class HuobiWSResp {
 
+    private String id;
+
     private long ts;
 
     private String status;

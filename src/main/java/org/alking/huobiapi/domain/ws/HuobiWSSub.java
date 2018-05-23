@@ -21,4 +21,12 @@ public class HuobiWSSub {
     public void setId(String id) {
         this.id = id;
     }
+
+    public HuobiWSSub() {
+    }
+
+    public HuobiWSSub(String sub, String id) {
+        this.sub = sub;
+        this.id = id;
+    }
 }

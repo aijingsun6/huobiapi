@@ -1,8 +1,5 @@
 package org.alking.huobiapi.domain;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-
 public class HuobiOrderBookEntry {
 
     private double price;
@@ -35,6 +32,6 @@ public class HuobiOrderBookEntry {
 
     @Override
     public String toString() {
-        return String.format("(%s,%s)",String.valueOf(price), String.valueOf(qty));
+        return String.format("(%s,%s)", String.valueOf(price), String.valueOf(qty));
     }
 }

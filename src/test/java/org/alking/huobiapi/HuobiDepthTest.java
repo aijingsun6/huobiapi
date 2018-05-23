@@ -2,26 +2,28 @@ package org.alking.huobiapi;
 
 
 import org.alking.huobiapi.domain.HuobiOrderBook;
+import org.alking.huobiapi.domain.ws.HuobiWSDepthEvent;
+import org.alking.huobiapi.misc.HuobiWSEventHandler;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class HuobiDepthTest {
 
-
     @Test
-    public void wsTest() throws InterruptedException {
+    public void wsTest() throws HuobiApiException {
         HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance();
         HuobiApiWSClient client = factory.newWSClient();
-        HuobiOrderBook ob;
-        for (int i = 0 ; i < 60; i ++){
-            try {
-                ob = client.depth("eosbtc", "step0");
-                System.out.println(ob);
-
-            } catch (HuobiApiException e) {
-
+        client.depth("eosbtc", "step0", new HuobiWSEventHandler() {
+            @Override
+            public void handleDepth(HuobiWSDepthEvent event) {
+                System.out.println(event.toString());
             }
-            Thread.sleep(1000);
+        });
+
+        try {
+            Thread.sleep(1000 * 60);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
