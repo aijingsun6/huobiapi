@@ -7,21 +7,11 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HuobiWSDepthEvent {
-
-    private long ts;
+public class HuobiWSDepthEvent extends HuobiWSEvent{
 
     private List<HuobiOrderBookEntry> bids = new ArrayList<>();
 
     private List<HuobiOrderBookEntry> asks = new ArrayList<>();
-
-    public long getTs() {
-        return ts;
-    }
-
-    public void setTs(long ts) {
-        this.ts = ts;
-    }
 
     public List<HuobiOrderBookEntry> getBids() {
         return bids;
@@ -44,9 +34,9 @@ public class HuobiWSDepthEvent {
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("ts",ts)
-                .append("bids", bids)
-                .append("asks", asks)
+                .append("ts",getTs())
+                .append("bids", getBids())
+                .append("asks", getAsks())
                 .toString();
     }
 }

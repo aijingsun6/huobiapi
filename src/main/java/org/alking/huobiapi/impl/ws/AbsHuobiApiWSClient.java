@@ -4,6 +4,7 @@ import okhttp3.*;
 import okio.ByteString;
 import org.alking.huobiapi.constant.HuobiConst;
 import org.alking.huobiapi.domain.ws.HuobiWSSub;
+import org.alking.huobiapi.misc.HuobiWSEventHandler;
 import org.alking.huobiapi.util.HuobiUtil;
 import org.apache.commons.lang3.StringUtils;
 
@@ -14,10 +15,13 @@ public abstract class AbsHuobiApiWSClient extends WebSocketListener implements C
 
     protected final OkHttpClient client;
 
+    protected final HuobiWSEventHandler handler;
+
     protected WebSocket webSocket;
 
-    public AbsHuobiApiWSClient(OkHttpClient client) {
+    public AbsHuobiApiWSClient(final OkHttpClient client, final HuobiWSEventHandler handler) {
         this.client = client;
+        this.handler = handler;
     }
 
     public void start() {
@@ -75,18 +79,18 @@ public abstract class AbsHuobiApiWSClient extends WebSocketListener implements C
     @Override
     public void onClosed(WebSocket webSocket, int code, String reason) {
         System.out.println(String.format("%s onClosed %d,%s", getClass().getSimpleName(), code, reason));
+        if(this.handler != null){
+            this.handler.onClosed(code, reason);
+        }
 
     }
 
     @Override
     public void onFailure(WebSocket webSocket, Throwable t, Response response) {
-        String reason = "";
-        try {
-            reason = response.body().string();
-        } catch (Exception e) {
-            e.printStackTrace();
+        System.out.println(String.format("%s onFailure,%s", getClass().getSimpleName(), t.getMessage()));
+        if(this.handler != null){
+            handler.onFailure(t.getMessage());
         }
-        System.out.println(String.format("%s onFailure,%s", getClass().getSimpleName(), reason));
     }
 
     @Override

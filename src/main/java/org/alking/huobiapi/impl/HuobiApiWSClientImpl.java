@@ -4,11 +4,11 @@ import okhttp3.*;
 import org.alking.huobiapi.HuobiApiException;
 import org.alking.huobiapi.HuobiApiWSClient;
 import org.alking.huobiapi.impl.ws.HuobiApiWSDepthClient;
+import org.alking.huobiapi.impl.ws.HuobiApiWSKLineClient;
 import org.alking.huobiapi.misc.HuobiWSEventHandler;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class HuobiApiWSClientImpl implements HuobiApiWSClient, Closeable {
@@ -33,6 +33,11 @@ public class HuobiApiWSClientImpl implements HuobiApiWSClient, Closeable {
     @Override
     public void depth(String symbol, String type, HuobiWSEventHandler handler) throws HuobiApiException {
         new HuobiApiWSDepthClient(symbol,type,handler,this.client).start();
+    }
+
+    @Override
+    public void kline(String symbol, String period, HuobiWSEventHandler handler) throws HuobiApiException {
+        new HuobiApiWSKLineClient(symbol,period,handler,this.client).start();
     }
 
     @Override

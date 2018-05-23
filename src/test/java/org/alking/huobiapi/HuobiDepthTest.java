@@ -3,6 +3,7 @@ package org.alking.huobiapi;
 
 import org.alking.huobiapi.domain.HuobiOrderBook;
 import org.alking.huobiapi.domain.ws.HuobiWSDepthEvent;
+import org.alking.huobiapi.domain.ws.HuobiWSKLineEvent;
 import org.alking.huobiapi.misc.HuobiWSEventHandler;
 import org.junit.Assert;
 import org.junit.Test;

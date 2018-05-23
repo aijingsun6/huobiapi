@@ -1,0 +1,54 @@
+package org.alking.huobiapi.impl.ws;
+
+import okhttp3.OkHttpClient;
+import org.alking.huobiapi.domain.resp.HuobiWSKLineResp;
+import org.alking.huobiapi.domain.ws.HuobiWSKLineEvent;
+import org.alking.huobiapi.domain.ws.HuobiWSSub;
+import org.alking.huobiapi.misc.HuobiWSEventHandler;
+import org.alking.huobiapi.util.HuobiUtil;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Arrays;
+import java.util.UUID;
+
+public class HuobiApiWSKLineClient extends AbsHuobiApiWSClient {
+
+    private static String[] VALID_PERIODS = new String[]{"1min", "5min", "15min", "30min", "60min", "1day", "1mon", "1week", "1year"};
+
+    private final String symbol;
+
+    private final String period;
+
+    public HuobiApiWSKLineClient(final String symbol,
+                                 final String period,
+                                 final HuobiWSEventHandler handler,
+                                 final OkHttpClient client) {
+        super(client,handler);
+        if (StringUtils.isEmpty(symbol) || StringUtils.isEmpty(period) || handler == null) {
+            throw new IllegalArgumentException("symbol|period|handler not valid");
+        }
+        if (Arrays.stream(VALID_PERIODS).noneMatch((e) -> e.equals(period))) {
+            throw new IllegalArgumentException("type is not valid.");
+        }
+        this.symbol = symbol;
+        this.period = period;
+    }
+
+    @Override
+    protected HuobiWSSub calcSub() {
+        String id = UUID.randomUUID().toString();
+        HuobiWSSub sub = new HuobiWSSub(String.format("market.%s.kline.%s", symbol, period), id);
+        return sub;
+    }
+
+    @Override
+    protected void doHandler(String json) {
+        HuobiWSKLineResp resp = HuobiUtil.fromJson(json, HuobiWSKLineResp.class);
+        if(resp.tick != null){
+            HuobiWSKLineEvent event = new HuobiWSKLineEvent();
+            event.setTs( resp.ts );
+            event.setData( resp.tick);
+            this.handler.handleKLine(event);
+        }
+    }
+}

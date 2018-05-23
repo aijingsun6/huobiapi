@@ -1,8 +1,15 @@
 package org.alking.huobiapi.misc;
 
 import org.alking.huobiapi.domain.ws.HuobiWSDepthEvent;
+import org.alking.huobiapi.domain.ws.HuobiWSKLineEvent;
 
-public interface HuobiWSEventHandler {
+public abstract class HuobiWSEventHandler {
 
-    void handleDepth(HuobiWSDepthEvent event);
+    public void handleDepth(HuobiWSDepthEvent event){}
+
+    public void handleKLine(HuobiWSKLineEvent event){}
+
+    public void onClosed(int code, String reason){}
+
+    public void onFailure(String msg){}
 }
