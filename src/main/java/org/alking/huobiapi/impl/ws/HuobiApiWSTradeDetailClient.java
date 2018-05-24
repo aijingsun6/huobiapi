@@ -29,6 +29,7 @@ public class HuobiApiWSTradeDetailClient extends AbsHuobiApiWSClient<HuobiWSTrad
 
         if(resp.tick != null && resp.tick.data != null){
             HuobiWSTradeDetailEvent event = new HuobiWSTradeDetailEvent();
+            event.setSymbol(this.symbol);
             event.setTs( resp.ts );
             event.setDetails( resp.tick.data );
             if(this.handler != null){

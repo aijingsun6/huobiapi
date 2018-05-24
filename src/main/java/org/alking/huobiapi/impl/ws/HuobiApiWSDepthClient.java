@@ -45,8 +45,10 @@ public class HuobiApiWSDepthClient extends AbsHuobiApiWSClient<HuobiWSOrderBookR
 
     @Override
     protected void doHandler(HuobiWSOrderBookResp resp) {
-        if (resp != null && resp.tick != null) {
+        if (this.handler != null && resp != null && resp.tick != null) {
             HuobiWSDepthEvent event = new HuobiWSDepthEvent();
+            event.setSymbol(symbol);
+            event.setType(type);
             event.setTs(resp.ts);
             event.setAsks(HuobiOrderBookEntry.parseMany(resp.tick.asks));
             event.setBids(HuobiOrderBookEntry.parseMany(resp.tick.bids));

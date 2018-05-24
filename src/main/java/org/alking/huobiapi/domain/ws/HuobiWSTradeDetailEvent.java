@@ -8,7 +8,17 @@ import java.util.List;
 
 public class HuobiWSTradeDetailEvent extends HuobiWSEvent {
 
+    private String symbol;
+
     private List<HuobiTradeDetail> details;
+
+    public String getSymbol() {
+        return symbol;
+    }
+
+    public void setSymbol(String symbol) {
+        this.symbol = symbol;
+    }
 
     public List<HuobiTradeDetail> getDetails() {
         return details;
@@ -24,6 +34,7 @@ public class HuobiWSTradeDetailEvent extends HuobiWSEvent {
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("symbol",symbol)
                 .append("ts",getTs())
                 .append("details", getDetails())
                 .toString();

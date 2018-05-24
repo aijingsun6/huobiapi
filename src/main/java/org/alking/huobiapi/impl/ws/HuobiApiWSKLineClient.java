@@ -43,8 +43,10 @@ public class HuobiApiWSKLineClient extends AbsHuobiApiWSClient<HuobiWSKLineResp>
 
     @Override
     protected void doHandler(HuobiWSKLineResp resp) {
-        if (resp.tick != null) {
+        if (this.handler != null && resp != null && resp.tick != null) {
             HuobiWSKLineEvent event = new HuobiWSKLineEvent();
+            event.setSymbol(symbol);
+            event.setPeriod(period);
             event.setTs(resp.ts);
             event.setData(resp.tick);
             this.handler.handleKLine(event);

@@ -9,4 +9,6 @@ public interface HuobiApiWSClient {
     void kline(String symbol, String period, HuobiWSEventHandler handler) throws HuobiApiException;
 
     void tradeDetail(String symbol, HuobiWSEventHandler handler) throws HuobiApiException;
+
+    void marketDetail(String symbol, HuobiWSEventHandler handler) throws HuobiApiException;
 }

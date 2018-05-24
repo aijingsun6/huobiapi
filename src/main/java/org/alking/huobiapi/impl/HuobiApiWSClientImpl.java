@@ -5,6 +5,7 @@ import org.alking.huobiapi.HuobiApiException;
 import org.alking.huobiapi.HuobiApiWSClient;
 import org.alking.huobiapi.impl.ws.HuobiApiWSDepthClient;
 import org.alking.huobiapi.impl.ws.HuobiApiWSKLineClient;
+import org.alking.huobiapi.impl.ws.HuobiApiWSMarketDetailClient;
 import org.alking.huobiapi.impl.ws.HuobiApiWSTradeDetailClient;
 import org.alking.huobiapi.misc.HuobiWSEventHandler;
 
@@ -55,6 +56,15 @@ public class HuobiApiWSClientImpl implements HuobiApiWSClient, Closeable {
     public void tradeDetail(String symbol, HuobiWSEventHandler handler) throws HuobiApiException {
         try {
             new HuobiApiWSTradeDetailClient(this.client, handler, symbol).start();
+        } catch (Exception e) {
+            throw new HuobiApiException(e);
+        }
+    }
+
+    @Override
+    public void marketDetail(String symbol, HuobiWSEventHandler handler) throws HuobiApiException {
+        try {
+            new HuobiApiWSMarketDetailClient(this.client, handler, symbol).start();
         } catch (Exception e) {
             throw new HuobiApiException(e);
         }
