@@ -9,7 +9,7 @@ public class HuobiTradeDetail {
 
     private long ts;
 
-    // TODO:这边人家的id 太大了
+    // TODO: id too large
     // private long id;
 
     private double price;

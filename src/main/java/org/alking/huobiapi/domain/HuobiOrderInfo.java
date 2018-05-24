@@ -20,27 +20,15 @@ public class HuobiOrderInfo {
     @SerializedName("amount")
     private String amount;
 
-    /**
-     * 订单撤销时间
-     */
     @SerializedName("canceled-at")
     private long canceledAt;
 
-    /**
-     * 订单创建时间
-     */
     @SerializedName("created-at")
     private long createdAt;
 
-    /**
-     * 已成交数量
-     */
     @SerializedName("field-amount")
     private String fieldAmount;
 
-    /**
-     * 已成交总金额
-     */
     @SerializedName("field-cash-amount")
     private String fieldCashAmount;
 
@@ -61,12 +49,12 @@ public class HuobiOrderInfo {
 
     /**
      * <pre>
-     *     pre-submitted 准备提交,
-     *     submitting , submitted 已提交,
-     *     partial-filled 部分成交,
-     *     partial-canceled 部分成交撤销,
-     *     filled 完全成交,
-     *     canceled 已撤销
+     *     pre-submitted
+     *     submitting
+     *     partial-filled
+     *     partial-canceled
+     *     filled
+     *     canceled
      * </pre>
      */
     @SerializedName("state")

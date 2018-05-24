@@ -19,6 +19,6 @@ public class HuobiMarketDetailTest {
             }
         });
 
-        Thread.sleep(1000 * 60);
+        Thread.sleep(1000 * 10);
     }
 }

@@ -22,7 +22,7 @@ public class HuobiDepthTest {
         });
 
         try {
-            Thread.sleep(1000 * 60);
+            Thread.sleep(1000 * 10);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

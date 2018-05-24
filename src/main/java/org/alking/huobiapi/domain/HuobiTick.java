@@ -25,13 +25,13 @@ public class HuobiTick {
     private double vol;
 
     /**
-     * [卖1价,卖1量]
+     * [price,qty]
      */
     @SerializedName("ask")
     private ArrayList<Double> asks;
 
     /**
-     * [买1价,买1量]
+     * [price,qty]
      */
     @SerializedName("bid")
     private ArrayList<Double> bids;

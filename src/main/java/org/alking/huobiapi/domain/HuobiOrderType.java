@@ -3,9 +3,6 @@ package org.alking.huobiapi.domain;
 
 public enum HuobiOrderType {
 
-    /**
-     * 市价买
-     */
     BUY_MARKET("buy-market"),
     SELL_MARKET("sell-market"),
     BUY_LIMIT("buy-limit"),

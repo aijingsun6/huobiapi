@@ -27,7 +27,7 @@ public class HuobiApiWSClientImpl implements HuobiApiWSClient, Closeable {
 
     public HuobiApiWSClientImpl() {
         this.client = build.build();
-        //TODO:可配置
+        //TODO: config
         this.client.dispatcher().setMaxRequests(32);
         this.client.dispatcher().setMaxRequestsPerHost(32);
     }

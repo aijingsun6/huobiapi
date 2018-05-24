@@ -1,5 +1,8 @@
 apply plugin: 'java'
 
+group 'huobiapi'
+version '1.0.0'
+
 repositories {
     mavenCentral()
 }
