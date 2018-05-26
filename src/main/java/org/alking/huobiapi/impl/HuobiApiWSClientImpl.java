@@ -3,10 +3,8 @@ package org.alking.huobiapi.impl;
 import okhttp3.OkHttpClient;
 import org.alking.huobiapi.HuobiApiException;
 import org.alking.huobiapi.HuobiApiWSClient;
-import org.alking.huobiapi.impl.ws.HuobiApiWSDepthClient;
-import org.alking.huobiapi.impl.ws.HuobiApiWSKLineClient;
-import org.alking.huobiapi.impl.ws.HuobiApiWSMarketDetailClient;
-import org.alking.huobiapi.impl.ws.HuobiApiWSTradeDetailClient;
+import org.alking.huobiapi.impl.ws.*;
+import org.alking.huobiapi.misc.HuobiWSClientOption;
 import org.alking.huobiapi.misc.HuobiWSEventHandler;
 
 import java.io.Closeable;
@@ -15,27 +13,50 @@ import java.util.concurrent.TimeUnit;
 
 public class HuobiApiWSClientImpl implements HuobiApiWSClient, Closeable {
 
-    private static final OkHttpClient.Builder build = new OkHttpClient.Builder();
+    private final OkHttpClient client;
 
-    static {
-        build.connectTimeout(10, TimeUnit.SECONDS);
-        build.readTimeout(10, TimeUnit.SECONDS);
-        build.writeTimeout(10, TimeUnit.SECONDS);
-    }
-
-    private OkHttpClient client;
+    private HuobiWSClientOption option;
 
     public HuobiApiWSClientImpl() {
+        this(null);
+    }
+
+    public HuobiApiWSClientImpl(HuobiWSClientOption option) {
+        this.option = option == null ? new HuobiWSClientOption() : option;
+        final OkHttpClient.Builder build = new OkHttpClient.Builder();
+        build.connectTimeout(this.option.getConnectTimeout(), TimeUnit.SECONDS);
+        build.readTimeout(this.option.getReadTimeout(), TimeUnit.SECONDS);
+        build.writeTimeout(this.option.getWriteTimeout(), TimeUnit.SECONDS);
+
         this.client = build.build();
-        //TODO: config
-        this.client.dispatcher().setMaxRequests(32);
-        this.client.dispatcher().setMaxRequestsPerHost(32);
+        this.client.dispatcher().setMaxRequests(this.option.getMaxRequests());
+        this.client.dispatcher().setMaxRequestsPerHost(this.option.getMaxRequestsPerHost());
+    }
+
+    public OkHttpClient getClient() {
+        return client;
+    }
+
+    @Override
+    public void setOption(HuobiWSClientOption option) {
+        if (option == null) {
+            throw new IllegalArgumentException();
+        }
+        this.option = option;
+        this.client.dispatcher().setMaxRequests(this.option.getMaxRequests());
+        this.client.dispatcher().setMaxRequestsPerHost(this.option.getMaxRequestsPerHost());
+    }
+
+    @Override
+    public HuobiWSClientOption getOption() {
+        return this.option;
     }
 
     @Override
     public void depth(String symbol, String type, HuobiWSEventHandler handler) throws HuobiApiException {
         try {
-            new HuobiApiWSDepthClient(this.client, handler, symbol, type).start();
+            AbsHuobiApiWSClient client = new HuobiApiWSDepthClient(this, handler, symbol, type);
+            client.start();
         } catch (Exception e) {
             throw new HuobiApiException(e);
         }
@@ -45,7 +66,8 @@ public class HuobiApiWSClientImpl implements HuobiApiWSClient, Closeable {
     public void kline(String symbol, String period, HuobiWSEventHandler handler) throws HuobiApiException {
 
         try {
-            new HuobiApiWSKLineClient(this.client, handler, symbol, period).start();
+            AbsHuobiApiWSClient client = new HuobiApiWSKLineClient(this, handler, symbol, period);
+            client.start();
         } catch (Exception e) {
             throw new HuobiApiException(e);
         }
@@ -55,7 +77,8 @@ public class HuobiApiWSClientImpl implements HuobiApiWSClient, Closeable {
     @Override
     public void tradeDetail(String symbol, HuobiWSEventHandler handler) throws HuobiApiException {
         try {
-            new HuobiApiWSTradeDetailClient(this.client, handler, symbol).start();
+            AbsHuobiApiWSClient client = new HuobiApiWSTradeDetailClient(this, handler, symbol);
+            client.start();
         } catch (Exception e) {
             throw new HuobiApiException(e);
         }
@@ -64,7 +87,7 @@ public class HuobiApiWSClientImpl implements HuobiApiWSClient, Closeable {
     @Override
     public void marketDetail(String symbol, HuobiWSEventHandler handler) throws HuobiApiException {
         try {
-            new HuobiApiWSMarketDetailClient(this.client, handler, symbol).start();
+            new HuobiApiWSMarketDetailClient(this, handler, symbol).start();
         } catch (Exception e) {
             throw new HuobiApiException(e);
         }

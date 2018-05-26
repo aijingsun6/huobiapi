@@ -1,9 +1,9 @@
 package org.alking.huobiapi.impl.ws;
 
-import okhttp3.OkHttpClient;
 import org.alking.huobiapi.domain.resp.HuobiWSTradeDetailResp;
 import org.alking.huobiapi.domain.ws.HuobiWSSub;
 import org.alking.huobiapi.domain.ws.HuobiWSTradeDetailEvent;
+import org.alking.huobiapi.impl.HuobiApiWSClientImpl;
 import org.alking.huobiapi.misc.HuobiWSEventHandler;
 
 import java.util.UUID;
@@ -12,7 +12,8 @@ public class HuobiApiWSTradeDetailClient extends AbsHuobiApiWSClient<HuobiWSTrad
 
     private final String symbol;
 
-    public HuobiApiWSTradeDetailClient(OkHttpClient client, HuobiWSEventHandler handler, String symbol) {
+
+    public HuobiApiWSTradeDetailClient(HuobiApiWSClientImpl client, HuobiWSEventHandler handler, String symbol) {
         super(client, handler, HuobiWSTradeDetailResp.class);
         this.symbol = symbol;
     }

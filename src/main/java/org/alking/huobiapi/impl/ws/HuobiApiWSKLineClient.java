@@ -1,9 +1,9 @@
 package org.alking.huobiapi.impl.ws;
 
-import okhttp3.OkHttpClient;
 import org.alking.huobiapi.domain.resp.HuobiWSKLineResp;
 import org.alking.huobiapi.domain.ws.HuobiWSKLineEvent;
 import org.alking.huobiapi.domain.ws.HuobiWSSub;
+import org.alking.huobiapi.impl.HuobiApiWSClientImpl;
 import org.alking.huobiapi.misc.HuobiWSEventHandler;
 import org.apache.commons.lang3.StringUtils;
 
@@ -18,11 +18,7 @@ public class HuobiApiWSKLineClient extends AbsHuobiApiWSClient<HuobiWSKLineResp>
 
     private final String period;
 
-    public HuobiApiWSKLineClient(
-            final OkHttpClient client,
-            final HuobiWSEventHandler handler,
-            final String symbol,
-            final String period) {
+    public HuobiApiWSKLineClient(HuobiApiWSClientImpl client, HuobiWSEventHandler handler, String symbol, String period) {
         super(client, handler, HuobiWSKLineResp.class);
         if (StringUtils.isEmpty(symbol) || StringUtils.isEmpty(period) || handler == null) {
             throw new IllegalArgumentException("symbol|period|handler not valid");

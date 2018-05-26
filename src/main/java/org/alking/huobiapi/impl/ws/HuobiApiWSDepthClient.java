@@ -1,10 +1,10 @@
 package org.alking.huobiapi.impl.ws;
 
-import okhttp3.OkHttpClient;
 import org.alking.huobiapi.domain.HuobiOrderBookEntry;
 import org.alking.huobiapi.domain.resp.HuobiWSOrderBookResp;
 import org.alking.huobiapi.domain.ws.HuobiWSDepthEvent;
 import org.alking.huobiapi.domain.ws.HuobiWSSub;
+import org.alking.huobiapi.impl.HuobiApiWSClientImpl;
 import org.alking.huobiapi.misc.HuobiWSEventHandler;
 import org.apache.commons.lang3.StringUtils;
 
@@ -19,11 +19,7 @@ public class HuobiApiWSDepthClient extends AbsHuobiApiWSClient<HuobiWSOrderBookR
 
     private final String type;
 
-    public HuobiApiWSDepthClient(
-            final OkHttpClient client,
-            final HuobiWSEventHandler handler,
-            final String symbol,
-            final String type) {
+    public HuobiApiWSDepthClient(HuobiApiWSClientImpl client, HuobiWSEventHandler handler, String symbol, String type) {
         super(client, handler, HuobiWSOrderBookResp.class);
         if (StringUtils.isEmpty(symbol) || StringUtils.isEmpty(type) || handler == null) {
             throw new IllegalArgumentException("symbol|type|handler not valid");
@@ -50,8 +46,8 @@ public class HuobiApiWSDepthClient extends AbsHuobiApiWSClient<HuobiWSOrderBookR
             event.setSymbol(symbol);
             event.setType(type);
             event.setTs(resp.ts);
-            event.setAsks(HuobiOrderBookEntry.parseMany(resp.tick.asks));
-            event.setBids(HuobiOrderBookEntry.parseMany(resp.tick.bids));
+            event.setAsks(resp.tick.asks);
+            event.setBids(resp.tick.bids);
             this.handler.handleDepth(event);
         }
     }

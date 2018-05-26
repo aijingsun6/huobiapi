@@ -19,6 +19,6 @@ public class HuobiTradeDetailTest {
             }
         });
 
-        Thread.sleep(1000 * 10);
+        Thread.sleep(1000 * 60);
     }
 }

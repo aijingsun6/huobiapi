@@ -1,20 +1,29 @@
 package org.alking.huobiapi.domain;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+@JsonDeserialize(using = HuobiTradeDetailDeserializer.class)
 public class HuobiTradeDetail {
 
     private double amount;
 
     private long ts;
 
-    // TODO: id too large
-    // private long id;
+    private String id;
 
     private double price;
 
     private String direction;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public double getAmount() {
         return amount;
@@ -54,6 +63,7 @@ public class HuobiTradeDetail {
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("id",id)
                 .append("amount",amount)
                 .append("ts", ts)
                 .append("price", price)

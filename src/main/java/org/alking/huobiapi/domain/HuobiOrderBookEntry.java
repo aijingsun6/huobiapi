@@ -1,8 +1,11 @@
 package org.alking.huobiapi.domain;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
+@JsonDeserialize(using = HuobiOrderBookEntryDeserializer.class)
 public class HuobiOrderBookEntry {
 
     private double price;

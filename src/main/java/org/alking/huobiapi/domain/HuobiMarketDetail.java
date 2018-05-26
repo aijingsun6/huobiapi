@@ -21,6 +21,8 @@ public class HuobiMarketDetail {
 
     private double vol;
 
+    private long version;
+
     public double getAmount() {
         return amount;
     }
@@ -85,6 +87,14 @@ public class HuobiMarketDetail {
         this.vol = vol;
     }
 
+    public long getVersion() {
+        return version;
+    }
+
+    public void setVersion(long version) {
+        this.version = version;
+    }
+
     public HuobiMarketDetail() {
     }
 
@@ -99,6 +109,7 @@ public class HuobiMarketDetail {
                 .append("count", count)
                 .append("low", low)
                 .append("vol", vol)
+                .append("version",version)
                 .toString();
     }
 }

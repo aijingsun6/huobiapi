@@ -1,11 +1,13 @@
 package org.alking.huobiapi.impl.ws;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 import okio.ByteString;
 import org.alking.huobiapi.constant.HuobiConst;
 import org.alking.huobiapi.domain.resp.HuobiWSResp;
 import org.alking.huobiapi.domain.ws.HuobiWSError;
 import org.alking.huobiapi.domain.ws.HuobiWSSub;
+import org.alking.huobiapi.impl.HuobiApiWSClientImpl;
 import org.alking.huobiapi.misc.HuobiWSEventHandler;
 import org.alking.huobiapi.util.HuobiUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -15,7 +17,9 @@ import java.io.IOException;
 
 public abstract class AbsHuobiApiWSClient<T extends HuobiWSResp> extends WebSocketListener implements Closeable {
 
-    protected final OkHttpClient client;
+    private ObjectMapper objectMapper = new ObjectMapper();
+
+    protected final HuobiApiWSClientImpl client;
 
     protected final HuobiWSEventHandler handler;
 
@@ -23,7 +27,8 @@ public abstract class AbsHuobiApiWSClient<T extends HuobiWSResp> extends WebSock
 
     protected WebSocket webSocket;
 
-    public AbsHuobiApiWSClient(final OkHttpClient client, final HuobiWSEventHandler handler, final Class<T> clazz) {
+
+    public AbsHuobiApiWSClient(final HuobiApiWSClientImpl client, final HuobiWSEventHandler handler, final Class<T> clazz) {
         this.client = client;
         this.handler = handler;
         this.clazz = clazz;
@@ -31,7 +36,7 @@ public abstract class AbsHuobiApiWSClient<T extends HuobiWSResp> extends WebSock
 
     public void start() {
         Request.Builder builder = new Request.Builder().url(HuobiConst.WS_URL);
-        this.webSocket = client.newWebSocket(builder.build(), this);
+        this.webSocket = client.getClient().newWebSocket(builder.build(), this);
     }
 
     public void shutdown() {
@@ -74,15 +79,20 @@ public abstract class AbsHuobiApiWSClient<T extends HuobiWSResp> extends WebSock
             return;
         }
         // System.out.println(json);
-        T resp = HuobiUtil.fromJson(json, this.clazz);
-        if (resp.status != null && !resp.status.equals(HuobiWSResp.STATUES_OK)) {
-            HuobiWSError err = new HuobiWSError(resp.errCode, resp.errMsg);
-            if (handler != null) {
-                this.handler.onError(err);
+        try {
+            T resp =  objectMapper.readValue(json, clazz);
+            if (resp.status != null && !resp.status.equals(HuobiWSResp.STATUES_OK)) {
+                HuobiWSError err = new HuobiWSError(resp.errCode, resp.errMsg);
+                if (handler != null) {
+                    this.handler.onError(err);
+                }
+            } else {
+                this.doHandler(resp);
             }
-        } else {
-            this.doHandler(resp);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
     }
 
     @Override
@@ -96,6 +106,9 @@ public abstract class AbsHuobiApiWSClient<T extends HuobiWSResp> extends WebSock
         if (this.handler != null) {
             this.handler.onClosed(code, reason);
         }
+        if(this.client.getOption().isReconWhenClosed()){
+            this.start();
+        }
 
     }
 
@@ -104,6 +117,9 @@ public abstract class AbsHuobiApiWSClient<T extends HuobiWSResp> extends WebSock
         System.out.println(String.format("%s onFailure,%s", getClass().getSimpleName(), t.getMessage()));
         if (this.handler != null) {
             handler.onFailure(t.getMessage());
+        }
+        if(this.client.getOption().isReconWhenFailure()){
+            this.start();
         }
     }
 
