@@ -403,8 +403,8 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
         }
         String path = String.format("/v1/order/orders/%s", orderId);
         HashMap<String, String> map = new HashMap<>();
-        TreeMap<String, String> query = buildQueryMap(map, METHOD_POST, path);
-        HuobiOrderInfolResp resp = httpPost(HuobiConst.TRADE_URL, path, query, map, HuobiOrderInfolResp.class);
+        TreeMap<String, String> query = buildQueryMap(map, METHOD_GET, path);
+        HuobiOrderInfolResp resp = httpGet(HuobiConst.TRADE_URL, path, query, HuobiOrderInfolResp.class);
         return resp.getOrderDetail();
     }
 
