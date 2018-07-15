@@ -16,6 +16,8 @@ public class RestClientTest {
 
     private static final String HUOBI_SECRET_KEY = "";
 
+    private static final String HUOBI_PRIVATE_KEY = "";
+
 
     @Test
     public void currencysTest() {
@@ -75,7 +77,7 @@ public class RestClientTest {
 
     // @Test
     public void accountsTest() throws HuobiApiException {
-        HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance(HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY);
+        HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance(HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY,HUOBI_PRIVATE_KEY);
         HuobiApiRestClient client = factory.newRestClient();
         List<HuobiAccount> accounts = client.accounts();
         Assert.assertFalse(accounts.isEmpty());
@@ -84,7 +86,7 @@ public class RestClientTest {
 
     // @Test
     public void balanceTest() throws HuobiApiException {
-        HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance(HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY);
+        HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance(HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY,HUOBI_PRIVATE_KEY);
         HuobiApiRestClient client = factory.newRestClient();
         HuobiBalance ret = client.balance(HuobiAccount.ACCOUNT_TYPE_SPOT);
         // logger.info("balance:{}", HuobiUtil.toJson(ret));
@@ -93,7 +95,7 @@ public class RestClientTest {
 
     // @Test
     public void balanceTest2() throws HuobiApiException {
-        HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance(HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY);
+        HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance(HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY,HUOBI_PRIVATE_KEY);
         HuobiApiRestClient client = factory.newRestClient();
         HuobiBalance ret = client.balance(964900L);
         Assert.assertFalse( ret.getCurrencies().isEmpty());
@@ -107,7 +109,7 @@ public class RestClientTest {
     // @Test
     public void sendOrderTest() {
         try {
-            HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance(HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY);
+            HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance(HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY,HUOBI_PRIVATE_KEY);
             HuobiApiRestClient client = factory.newRestClient();
             String orderId = client.sendOrder("btcusdt", "1", "0.001", HuobiOrderType.BUY_LIMIT);
             // logger.info("order success id : {}", orderId);
@@ -121,7 +123,7 @@ public class RestClientTest {
     }
     // @Test
     public void cancelOrderTest() throws HuobiApiException {
-        HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance(HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY);
+        HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance(HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY,HUOBI_PRIVATE_KEY);
         HuobiApiRestClient client = factory.newRestClient();
         String orderId = client.cancelOrder("641275426");
     }
@@ -130,7 +132,7 @@ public class RestClientTest {
     public void orderInfoTest() {
 
         try {
-            HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance(HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY);
+            HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance(HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY,HUOBI_PRIVATE_KEY);
             HuobiApiRestClient client = factory.newRestClient();
             HuobiOrderInfo orderDetail = client.orderInfo("641177079");
             // logger.info("order detail:{}", HuobiUtil.toJson(orderDetail));
@@ -142,7 +144,7 @@ public class RestClientTest {
     // @Test
     public void matchResultTest() {
         try {
-            HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance(HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY);
+            HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance(HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY,HUOBI_PRIVATE_KEY);
             HuobiApiRestClient client = factory.newRestClient();
             HuobiOrderMatchResult matchResult = client.matchResult("641177079");
             // logger.info("matchResult:{}", HuobiUtil.toJson(matchResult));
@@ -155,7 +157,7 @@ public class RestClientTest {
     // @Test
     public void ordresTest() {
         try {
-            HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance(HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY);
+            HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance(HUOBI_ACCESS_KEY, HUOBI_SECRET_KEY,HUOBI_PRIVATE_KEY);
             HuobiApiRestClient client = factory.newRestClient();
             List<HuobiOrderType> types = new ArrayList<>();
             List<HuobiOrderState> states = new ArrayList<>();

@@ -14,5 +14,6 @@ dependencies {
     compile 'org.apache.commons:commons-lang3:3.6'
     compile 'com.google.code.gson:gson:2.8.2'
     compile group: 'org.apache.commons', name: 'commons-compress', version: '1.14'
+    compile group: 'org.bouncycastle', name: 'bcprov-ext-jdk15on', version: '1.60'
     testCompile 'junit:junit:4.12'
 }

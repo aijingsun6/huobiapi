@@ -9,13 +9,16 @@ import org.alking.huobiapi.domain.*;
 import org.alking.huobiapi.domain.resp.*;
 import org.alking.huobiapi.util.HuobiUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.net.ssl.*;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
 import java.security.cert.CertificateException;
+import java.security.interfaces.ECPrivateKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -44,15 +47,17 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
         builder.writeTimeout(10, TimeUnit.SECONDS);
     }
 
-    private SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
-
-    private SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm:ss");
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
     private OkHttpClient httpClient;
 
     private String apiKey = null;
 
     private String secret = null;
+
+    private String privateKey = null;
+
+    private Signature ecdsaSign = null;
 
     private List<HuobiAccount> accountsCache = null;
 
@@ -90,12 +95,36 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
         }
     }
 
-    public HuobiApiRestClientImpl(String apiKey, String secret) {
+    public HuobiApiRestClientImpl(String apiKey, String secret,String privateKey) {
         this.apiKey = apiKey;
         this.secret = secret;
+        this.privateKey = privateKey;
         this.httpClient = builder.build();
-        sdfDate.setTimeZone(TimeZone.getTimeZone("UTC"));
-        sdfTime.setTimeZone(TimeZone.getTimeZone("UTC"));
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+    }
+
+    private void initSign(final String key){
+        if(StringUtils.isEmpty(key)){
+            return;
+        }
+
+        try {
+            Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+            byte[] keyBytes = Base64.getDecoder().decode(key);
+            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
+            KeyFactory keyFactory = KeyFactory.getInstance("EC", "BC");
+            ECPrivateKey privateKey = (ECPrivateKey) keyFactory.generatePrivate(keySpec);
+            ecdsaSign = Signature.getInstance("SHA256withECDSA", new BouncyCastleProvider());
+            ecdsaSign.initSign(privateKey);
+        } catch (InvalidKeyException e) {
+            throw new RuntimeException("Invalid key: " + e.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("No such algorithm: " + e.getMessage());
+        } catch (NoSuchProviderException e) {
+            throw new RuntimeException("No such provider: " + e.getMessage());
+        } catch (InvalidKeySpecException e) {
+            throw new RuntimeException("Invalid key Spec: " + e.getMessage());
+        }
     }
 
     private HuobiApiError parseError(HuobiResp resp) {
@@ -131,7 +160,8 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
             } else {
                 body = response.body();
                 if (body != null) {
-                    HuobiResp resp = HuobiUtil.fromJson(body.string(), HuobiResp.class);
+                    String json = body.string();
+                    HuobiResp resp = HuobiUtil.fromJson(json, HuobiResp.class);
                     HuobiApiError err = parseError(resp);
                     throw new HuobiApiException(err);
                 }
@@ -266,7 +296,7 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
         query.put("SignatureMethod", "HmacSHA256");
         query.put("SignatureVersion", "2");
         Date now = new Date();
-        String timestamp = String.format("%sT%s", sdfDate.format(now), sdfTime.format(now));
+        String timestamp = String.format("%s", sdf.format(now));
         // timestamp = "2018-01-08T14:30:20";
 
         query.put("Timestamp", timestamp);
@@ -280,10 +310,21 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
             String data = String.format("%s\napi.huobi.pro\n%s\n%s", method, path, HuobiUtil.buildQuery(query));
             String sign = HuobiUtil.hashMac256(data, secret);
             query.put("Signature", sign);
+            byte[] signData = sign(sign.getBytes());
+            String  privateSignature = Base64.getEncoder().encodeToString(signData);
+            query.put("PrivateSignature", privateSignature);
             return query;
         } catch (UnsupportedEncodingException e) {
             throw new HuobiApiException(e);
+        } catch (SignatureException e) {
+            throw new HuobiApiException(e);
         }
+    }
+
+    public byte[] sign(byte[] data) throws SignatureException   {
+        ecdsaSign.update(data);
+        byte[] signData = ecdsaSign.sign();
+        return signData;
     }
 
     @Override

@@ -20,7 +20,7 @@ public class HuobiUtil {
     }
 
     public static <T> T fromJson(String json,Class<T> clazz) {
-        return gson.fromJson(json,clazz);
+        return gson.fromJson(json, clazz);
     }
 
     public static <T> T fromJson(String json, Type typeOfT){
@@ -81,8 +81,12 @@ public class HuobiUtil {
         return sb.toString();
     }
 
-    public static String urlEncode(String s) throws UnsupportedEncodingException {
-        return URLEncoder.encode(s,"utf-8");
+    public static String urlEncode(String s) {
+        try {
+            return URLEncoder.encode(s, "UTF-8").replaceAll("\\+", "%20");
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException("UTF-8 encoding not supported!");
+        }
     }
 
     public static String uncompress(byte[] bytes) throws IOException {

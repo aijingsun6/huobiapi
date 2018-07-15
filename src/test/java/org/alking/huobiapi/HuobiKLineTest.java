@@ -22,13 +22,6 @@ public class HuobiKLineTest {
         }
     }
 
-    @Test(expected = HuobiApiException.class)
-    public void testWithErrorSymbol() throws HuobiApiException{
-        HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance();
-        HuobiApiRestClient client = factory.newRestClient();
-        client.kline("btcusdt123","5min",10);
-    }
-
     @Test
     public void wsTest() throws HuobiApiException, InterruptedException {
         HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance();
