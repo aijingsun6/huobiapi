@@ -1,6 +1,7 @@
 package org.alking.huobiapi;
 
 import org.alking.huobiapi.domain.*;
+import org.alking.huobiapi.util.HuobiUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -60,7 +61,7 @@ public class RestClientTest {
     }
 
 
-    // @Test
+    @Test
     public void depthTest() {
         HuobiApiClientFactory factory = HuobiApiClientFactory.newInstance();
         HuobiApiRestClient client = factory.newRestClient();
@@ -163,6 +164,7 @@ public class RestClientTest {
             List<HuobiOrderState> states = new ArrayList<>();
             states.add( HuobiOrderState.CANCELED);
             List<HuobiOrderInfo> infos = client.orders("btcusdt", types,null,null,   states, null,0);
+            System.out.println(HuobiUtil.toJson(infos));
             // logger.info("ordres:{}", HuobiUtil.toJson(infos));
         } catch (HuobiApiException e) {
             // logger.error(e.getMessage());

@@ -1,7 +1,10 @@
 package org.alking.huobiapi.impl.ws;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import okhttp3.*;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.WebSocket;
+import okhttp3.WebSocketListener;
 import okio.ByteString;
 import org.alking.huobiapi.constant.HuobiConst;
 import org.alking.huobiapi.domain.resp.HuobiWSResp;

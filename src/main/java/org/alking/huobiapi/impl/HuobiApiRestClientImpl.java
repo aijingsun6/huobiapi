@@ -7,23 +7,25 @@ import org.alking.huobiapi.HuobiApiRestClient;
 import org.alking.huobiapi.constant.HuobiConst;
 import org.alking.huobiapi.domain.*;
 import org.alking.huobiapi.domain.resp.*;
+import org.alking.huobiapi.util.ApiSignature;
 import org.alking.huobiapi.util.HuobiUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.net.ssl.*;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.security.*;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.security.interfaces.ECPrivateKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class HuobiApiRestClientImpl implements HuobiApiRestClient {
+
+    private static final String API_HOST = "api.huobi.pro";
 
     private static final String METHOD_GET = "GET";
 
@@ -36,7 +38,6 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
     static {
         builder.sslSocketFactory(getSSLSocketFactory());
         builder.hostnameVerifier(new HostnameVerifier() {
-
             @Override
             public boolean verify(String s, SSLSession sslSession) {
                 return true;
@@ -47,7 +48,6 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
         builder.writeTimeout(10, TimeUnit.SECONDS);
     }
 
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
     private OkHttpClient httpClient;
 
@@ -57,7 +57,7 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
 
     private String privateKey = null;
 
-    private Signature ecdsaSign = null;
+    private ApiSignature apiSignature = null;
 
     private List<HuobiAccount> accountsCache = null;
 
@@ -100,32 +100,9 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
         this.secret = secret;
         this.privateKey = privateKey;
         this.httpClient = builder.build();
-        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        this.apiSignature = new ApiSignature(privateKey);
     }
 
-    private void initSign(final String key){
-        if(StringUtils.isEmpty(key)){
-            return;
-        }
-
-        try {
-            Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-            byte[] keyBytes = Base64.getDecoder().decode(key);
-            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
-            KeyFactory keyFactory = KeyFactory.getInstance("EC", "BC");
-            ECPrivateKey privateKey = (ECPrivateKey) keyFactory.generatePrivate(keySpec);
-            ecdsaSign = Signature.getInstance("SHA256withECDSA", new BouncyCastleProvider());
-            ecdsaSign.initSign(privateKey);
-        } catch (InvalidKeyException e) {
-            throw new RuntimeException("Invalid key: " + e.getMessage());
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("No such algorithm: " + e.getMessage());
-        } catch (NoSuchProviderException e) {
-            throw new RuntimeException("No such provider: " + e.getMessage());
-        } catch (InvalidKeySpecException e) {
-            throw new RuntimeException("Invalid key Spec: " + e.getMessage());
-        }
-    }
 
     private HuobiApiError parseError(HuobiResp resp) {
         if (resp.getStatus().equals("ok")) {
@@ -290,41 +267,8 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
         return book;
     }
 
-    private TreeMap<String, String> buildQueryMap(Map<String, String> map, String method, String path) throws HuobiApiException {
-        TreeMap<String, String> query = new TreeMap<>();
-        query.put("AccessKeyId", apiKey);
-        query.put("SignatureMethod", "HmacSHA256");
-        query.put("SignatureVersion", "2");
-        Date now = new Date();
-        String timestamp = String.format("%s", sdf.format(now));
-        // timestamp = "2018-01-08T14:30:20";
-
-        query.put("Timestamp", timestamp);
-
-        if (METHOD_GET.equals(method) && (map != null) && !map.isEmpty()) {
-            for (Map.Entry<String, String> e : map.entrySet()) {
-                query.put(e.getKey(), e.getValue());
-            }
-        }
-        try {
-            String data = String.format("%s\napi.huobi.pro\n%s\n%s", method, path, HuobiUtil.buildQuery(query));
-            String sign = HuobiUtil.hashMac256(data, secret);
-            query.put("Signature", sign);
-            byte[] signData = sign(sign.getBytes());
-            String  privateSignature = Base64.getEncoder().encodeToString(signData);
-            query.put("PrivateSignature", privateSignature);
-            return query;
-        } catch (UnsupportedEncodingException e) {
-            throw new HuobiApiException(e);
-        } catch (SignatureException e) {
-            throw new HuobiApiException(e);
-        }
-    }
-
-    public byte[] sign(byte[] data) throws SignatureException   {
-        ecdsaSign.update(data);
-        byte[] signData = ecdsaSign.sign();
-        return signData;
+    private Map<String, String> buildQueryMap(Map<String, String> map, String method, String path) {
+        return this.apiSignature.createSignature(this.apiKey,this.secret,method,API_HOST,path,map);
     }
 
     @Override
@@ -338,7 +282,7 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
             throw new HuobiApiException("key not exist");
         }
         String path = "/v1/account/accounts";
-        TreeMap<String, String> query = buildQueryMap(null, METHOD_GET, path);
+        Map<String, String> query = buildQueryMap(null, METHOD_GET, path);
         HuobiAccountResp resp = httpGet(HuobiConst.TRADE_URL, path, query, HuobiAccountResp.class);
         if (resp != null && !resp.getAccounts().isEmpty()) {
             synchronized (accountsCacheLock) {
@@ -374,7 +318,7 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
         if (!HuobiAccount.ACCOUNT_TYPE_SPOT.equals(type) && !HuobiAccount.ACCOUNT_TYPE_OTC.equals(type)) {
             throw new HuobiApiException("invalid type");
         }
-        List<HuobiAccount> accounts = null;
+        List<HuobiAccount> accounts;
         synchronized (accountsCacheLock) {
             if (accountsCache != null) {
                 accounts = accountsCache;
@@ -399,7 +343,7 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
         String path = String.format("/v1/account/accounts/%d/balance", accountId);
         HashMap<String, String> map = new HashMap<>();
         map.put("account-id", String.valueOf(accountId));
-        TreeMap<String, String> query = buildQueryMap(map, METHOD_GET, path);
+        Map<String, String> query = buildQueryMap(map, METHOD_GET, path);
         HuobiBalanceResp resp = httpGet(HuobiConst.TRADE_URL, path, query, HuobiBalanceResp.class);
         return resp.data;
     }
@@ -420,7 +364,7 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
         map.put("symbol", symbol);
         map.put("type", type.getName());
         map.put("source", source);
-        TreeMap<String, String> query = buildQueryMap(map, METHOD_POST, path);
+        Map<String, String> query = buildQueryMap(map, METHOD_POST, path);
         HuobiOrderResp resp = httpPost(HuobiConst.TRADE_URL, path, query, map, HuobiOrderResp.class);
         return resp.getOrderId();
     }
@@ -432,7 +376,7 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
         }
         final String path = String.format("/v1/order/orders/%s/submitcancel", orderId);
         HashMap<String, String> map = new HashMap<>();
-        TreeMap<String, String> query = buildQueryMap(map, METHOD_POST, path);
+        Map<String, String> query = buildQueryMap(map, METHOD_POST, path);
         HuobiCancelOrderResp resp = httpPost(HuobiConst.TRADE_URL, path, query, map, HuobiCancelOrderResp.class);
         return resp.getOrderId();
     }
@@ -444,7 +388,7 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
         }
         String path = String.format("/v1/order/orders/%s", orderId);
         HashMap<String, String> map = new HashMap<>();
-        TreeMap<String, String> query = buildQueryMap(map, METHOD_GET, path);
+        Map<String, String> query = buildQueryMap(map, METHOD_GET, path);
         HuobiOrderInfolResp resp = httpGet(HuobiConst.TRADE_URL, path, query, HuobiOrderInfolResp.class);
         return resp.getOrderDetail();
     }
@@ -456,7 +400,7 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
         }
         String path = String.format("/v1/order/orders/%s/matchresults", orderId);
         HashMap<String, String> map = new HashMap<>();
-        TreeMap<String, String> query = buildQueryMap(map, METHOD_GET, path);
+        Map<String, String> query = buildQueryMap(map, METHOD_GET, path);
         HuobiOrderMatchResultResp resp = httpGet(HuobiConst.TRADE_URL, path, query, HuobiOrderMatchResultResp.class);
         return resp.getMatchResult();
     }
@@ -511,7 +455,7 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
             map.put("size", String.valueOf(size));
         }
 
-        TreeMap<String, String> query = buildQueryMap(map, METHOD_GET, path);
+        Map<String, String> query = buildQueryMap(map, METHOD_GET, path);
         HuobiOrdersResp resp = httpGet(HuobiConst.TRADE_URL, path, query, HuobiOrdersResp.class);
         return resp.getOrderInfos();
     }

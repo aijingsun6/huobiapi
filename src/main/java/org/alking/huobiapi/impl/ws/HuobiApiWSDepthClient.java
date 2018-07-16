@@ -1,6 +1,5 @@
 package org.alking.huobiapi.impl.ws;
 
-import org.alking.huobiapi.domain.HuobiOrderBookEntry;
 import org.alking.huobiapi.domain.resp.HuobiWSOrderBookResp;
 import org.alking.huobiapi.domain.ws.HuobiWSDepthEvent;
 import org.alking.huobiapi.domain.ws.HuobiWSSub;
