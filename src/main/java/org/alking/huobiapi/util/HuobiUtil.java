@@ -8,6 +8,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.lang.reflect.Type;
+import java.net.URLEncoder;
 import java.util.Map;
 
 public class HuobiUtil {
@@ -63,7 +64,7 @@ public class HuobiUtil {
     }
 
 
-    public static String buildQuery(Map<String, String> map) throws UnsupportedEncodingException {
+    public static String buildQuery(Map<String, String> map, ApiSignature signature) {
         if(map == null || map.isEmpty()){
             return "";
         }
@@ -75,9 +76,22 @@ public class HuobiUtil {
             }else {
                 sb.append("&");
             }
-            sb.append( e.getKey() ).append("=").append( ApiSignature.urlEncode(e.getValue()) );
+            if(signature == null){
+                sb.append( e.getKey() ).append("=").append( urlEncode(e.getValue()) );
+            }else {
+                sb.append( e.getKey() ).append("=").append( ApiSignature.urlEncode(e.getValue()) );
+            }
+
         }
         return sb.toString();
+    }
+
+    public static String urlEncode(String s) {
+        try {
+            return URLEncoder.encode(s, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException("UTF-8 encoding not supported!");
+        }
     }
 
     public static String uncompress(byte[] bytes) throws IOException {

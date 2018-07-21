@@ -29,10 +29,10 @@ public class ApiSignature {
 
     public ApiSignature(String key) {
         this.key = key;
-        this.init(key);
+        this.init();
     }
 
-    private void init(String key){
+    private void init(){
         if(StringUtils.isEmpty(key)){
             return;
         }
@@ -131,11 +131,11 @@ public class ApiSignature {
         }
     }
 
-    public long epochNow() {
+    public static long epochNow() {
         return Instant.now().getEpochSecond();
     }
 
-    public String gmtNow() {
+    public static String gmtNow() {
         return Instant.ofEpochSecond(epochNow()).atZone(ZONE_GMT).format(DT_FORMAT);
     }
 

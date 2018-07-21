@@ -13,14 +13,10 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.net.ssl.*;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class HuobiApiRestClientImpl implements HuobiApiRestClient {
@@ -95,12 +91,18 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
         }
     }
 
+    public HuobiApiRestClientImpl(String apiKey, String secret) {
+        this(apiKey,secret,null);
+    }
+
     public HuobiApiRestClientImpl(String apiKey, String secret,String privateKey) {
         this.apiKey = apiKey;
         this.secret = secret;
         this.privateKey = privateKey;
         this.httpClient = builder.build();
-        this.apiSignature = new ApiSignature(privateKey);
+        if(!StringUtils.isEmpty(this.privateKey)){
+            this.apiSignature = new ApiSignature(this.privateKey);
+        }
     }
 
 
@@ -173,12 +175,7 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
     }
 
     private <T extends HuobiResp> T httpGetPost(String host, String path, Map<String, String> queryMap, Object post, Class<T> clazz) throws HuobiApiException {
-        String query = null;
-        try {
-            query = HuobiUtil.buildQuery(queryMap);
-        } catch (UnsupportedEncodingException e) {
-            throw new HuobiApiException(e);
-        }
+        String query = HuobiUtil.buildQuery(queryMap,this.apiSignature);
         String url = String.format("%s%s?%s", host, path, query);
         // System.out.println(url);
         return executeReq(buildRequest(url, post), clazz);
@@ -267,8 +264,36 @@ public class HuobiApiRestClientImpl implements HuobiApiRestClient {
         return book;
     }
 
-    private Map<String, String> buildQueryMap(Map<String, String> map, String method, String path) {
+    private Map<String, String> buildQueryMap(Map<String, String> map, String method, String path) throws HuobiApiException {
+        if(this.apiSignature == null){
+            return this.buildQueryMap2(map,method,path);
+        }
         return this.apiSignature.createSignature(this.apiKey,this.secret,method,API_HOST,path,map);
+    }
+
+    private Map<String, String> buildQueryMap2(Map<String, String> map, String method, String path) throws HuobiApiException {
+        TreeMap<String, String> query = new TreeMap<>();
+        query.put("AccessKeyId", apiKey);
+        query.put("SignatureMethod", "HmacSHA256");
+        query.put("SignatureVersion", "2");
+        String timestamp = String.format("%s", ApiSignature.gmtNow());
+        // timestamp = "2018-01-08T14:30:20";
+
+        query.put("Timestamp", timestamp);
+
+        if (METHOD_GET.equals(method) && (map != null) && !map.isEmpty()) {
+            for (Map.Entry<String, String> e : map.entrySet()) {
+                query.put(e.getKey(), e.getValue());
+            }
+        }
+        try {
+            String data = String.format("%s\napi.huobi.pro\n%s\n%s", method, path, HuobiUtil.buildQuery(query,this.apiSignature));
+            String sign = HuobiUtil.hashMac256(data, secret);
+            query.put("Signature", sign);
+            return query;
+        } catch (Exception e) {
+            throw new HuobiApiException(e);
+        }
     }
 
     @Override

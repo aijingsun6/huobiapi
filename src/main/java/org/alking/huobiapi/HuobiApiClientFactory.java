@@ -14,6 +14,10 @@ public class HuobiApiClientFactory {
     public HuobiApiClientFactory() {
     }
 
+    private HuobiApiClientFactory(String apiKey, String secret) {
+       this(apiKey,secret,null);
+    }
+
     private HuobiApiClientFactory(String apiKey, String secret, String privateKey) {
         this.apiKey = apiKey;
         this.secret = secret;
@@ -26,6 +30,10 @@ public class HuobiApiClientFactory {
 
     public static HuobiApiClientFactory newInstance(String apiKey, String secret,String privateKey){
         return new HuobiApiClientFactory(apiKey, secret,privateKey);
+    }
+
+    public static HuobiApiClientFactory newInstance(String apiKey, String secret){
+        return new HuobiApiClientFactory(apiKey, secret);
     }
 
     public HuobiApiRestClient newRestClient(){
